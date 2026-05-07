@@ -12,4 +12,13 @@ class RegisterClinicResponse(BaseModel):
     name: str
     phone: str = Field(min_length=10, max_length=15)
     email: EmailStr
-    address: str
+    address: str | None = None
+
+
+class LoginClinic(BaseModel):
+    email: EmailStr
+    password: str
+
+class LoginClinicResponse(BaseModel):
+    access_token: str
+    token_type: str
