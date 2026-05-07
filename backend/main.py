@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Depends
+
+from backend.routes import auth_route
 from backend.database.db import get_db
 
 app = FastAPI()
@@ -23,3 +25,6 @@ def test_db(db=Depends(get_db)):
         "database_connected": True,
         "result": result
     }
+
+
+app.include_router(auth_route.router)
