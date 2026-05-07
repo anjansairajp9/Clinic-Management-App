@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, Request, Response
+from fastapi import APIRouter, Depends, status, Request, Response, HTTPException
 
 from backend.schemas.auth_schema import (
     RegisterClinic, 
@@ -9,7 +9,8 @@ from backend.schemas.auth_schema import (
 from backend.services.auth_service import (
     create_clinic_service, 
     login_clinic_service,
-    logout_clinic_service
+    logout_clinic_service,
+    create_new_access_token_service
 )
 from backend.database.db import get_db
 
@@ -42,9 +43,13 @@ def clinic_login(response: Response, data: LoginClinic, db=Depends(get_db)):
 @router.post("/logout", status_code=status.HTTP_200_OK)
 def clinic_logout(request: Request, response: Response, db=Depends(get_db)):
     refresh_token = request.cookies.get("refresh_token")
-
-    if refresh_token:
-        logout_clinic_service(db, refresh_token)
+    if not refresh_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Refresh Token Missing"
+        )
+    
+    logout_clinic_service(db, refresh_token)
 
     response.delete_cookie(
         key="refresh_token",
@@ -56,3 +61,15 @@ def clinic_logout(request: Request, response: Response, db=Depends(get_db)):
     return {
         "message": "Logged out successfully"
     }
+
+
+@router.post("/refresh", response_model=LoginClinicResponse, status_code=status.HTTP_200_OK)
+def create_new_access_token(request: Request, db=Depends(get_db)):
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Refresh Token Missing"
+        )
+    
+    return create_new_access_token_service(db, refresh_token)

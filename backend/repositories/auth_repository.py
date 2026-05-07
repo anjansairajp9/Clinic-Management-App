@@ -25,3 +25,19 @@ def store_refresh_token(db, clinic_id: int ,refresh_token: str):
 def delete_refresh_token(db, refresh_token: str):
     with db.cursor() as cursor:
         cursor.execute("DELETE FROM refresh_tokens WHERE token = %s", (refresh_token,))
+
+
+def get_clinic_by_refresh_token(db, refresh_token: str):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """SELECT
+                    refresh_tokens.clinic_id,
+                    clinics.email
+                FROM refresh_tokens
+                JOIN clinics
+                    ON clinics.id = refresh_tokens.clinic_id
+                WHERE refresh_tokens.token = %s
+                AND refresh_tokens.expires_at > NOW()
+            """, (refresh_token,))
+        
+        return cursor.fetchone()
