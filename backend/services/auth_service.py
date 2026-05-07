@@ -1,6 +1,9 @@
 from fastapi import HTTPException
 from psycopg2 import errors
 
+import secrets
+from datetime import datetime, timedelta, timezone
+
 from backend.core.security import ( 
     hash_password, 
     verify_password, 
@@ -15,7 +18,9 @@ from backend.repositories.auth_repository import (
     get_clinic_by_email, 
     store_refresh_token, 
     delete_refresh_token,
-    get_clinic_by_refresh_token
+    get_clinic_by_refresh_token,
+    store_password_reset_token,
+    delete_existing_password_reset_tokens
 )
 
 def create_clinic_service(db, data):
@@ -120,4 +125,30 @@ def create_new_access_token_service(db, refresh_token: str):
             "token_type": "bearer"
         }
     except Exception:
+        raise
+
+
+def forgot_password_service(db, data):
+    try:
+        clinic = get_clinic_by_email(db, data.email)
+        if not clinic:
+            return {"message": "If account exists, reset link has been sent"}
+        
+        clinic_id = clinic["id"]
+
+        delete_existing_password_reset_tokens(db, clinic_id)
+
+        reset_token = secrets.token_urlsafe(32)
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=15)
+
+        store_password_reset_token(db, clinic_id, reset_token, expires_at)
+
+        db.commit()
+
+        return {
+            "message": "If account exists, reset link has been sent",
+            "reset_token": reset_token
+        }
+    except Exception:
+        db.rollback()
         raise

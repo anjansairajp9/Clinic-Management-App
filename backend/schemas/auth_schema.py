@@ -22,3 +22,15 @@ class LoginClinic(BaseModel):
 class LoginClinicResponse(BaseModel):
     access_token: str
     token_type: str
+
+
+class LogoutResponse(BaseModel):
+    message: str
+
+
+class ForgotPassword(BaseModel):
+    email: EmailStr
+
+class ForgotPasswordResponse(BaseModel):
+    message: str
+    reset_token: str | None = None

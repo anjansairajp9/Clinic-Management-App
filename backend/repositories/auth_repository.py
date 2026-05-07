@@ -41,3 +41,14 @@ def get_clinic_by_refresh_token(db, refresh_token: str):
             """, (refresh_token,))
         
         return cursor.fetchone()
+
+
+def store_password_reset_token(db, clinic_id: int, reset_token: str, expires_at):
+    with db.cursor() as cursor:
+        cursor.execute("INSERT INTO password_reset_tokens (clinic_id, token, expires_at) VALUES (%s, %s, %s)",
+                       (clinic_id, reset_token, expires_at))
+        
+
+def delete_existing_password_reset_tokens(db, clinic_id: int):
+    with db.cursor() as cursor:
+        cursor.execute("DELETE FROM password_reset_tokens WHERE clinic_id = %s AND used = FALSE", (clinic_id,))

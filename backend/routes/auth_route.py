@@ -4,13 +4,17 @@ from backend.schemas.auth_schema import (
     RegisterClinic, 
     RegisterClinicResponse, 
     LoginClinic, 
-    LoginClinicResponse
+    LoginClinicResponse,
+    LogoutResponse,
+    ForgotPassword,
+    ForgotPasswordResponse
 )
 from backend.services.auth_service import (
     create_clinic_service, 
     login_clinic_service,
     logout_clinic_service,
-    create_new_access_token_service
+    create_new_access_token_service,
+    forgot_password_service
 )
 from backend.database.db import get_db
 
@@ -40,7 +44,7 @@ def clinic_login(response: Response, data: LoginClinic, db=Depends(get_db)):
     }
 
 
-@router.post("/logout", status_code=status.HTTP_200_OK)
+@router.post("/logout", response_model=LogoutResponse, status_code=status.HTTP_200_OK)
 def clinic_logout(request: Request, response: Response, db=Depends(get_db)):
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
@@ -73,3 +77,8 @@ def create_new_access_token(request: Request, db=Depends(get_db)):
         )
     
     return create_new_access_token_service(db, refresh_token)
+
+
+@router.post("/forgot-password", response_model=ForgotPasswordResponse, status_code=status.HTTP_200_OK)
+def forgot_password(data: ForgotPassword, db=Depends(get_db)):
+    return forgot_password_service(db, data)
