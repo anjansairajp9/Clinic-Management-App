@@ -1,5 +1,3 @@
-from psycopg2 import errors
-
 def create_clinic(db, name: str, phone: str, email: str, hashed_password: str, address: str | None):
     with db.cursor() as cursor:
         cursor.execute("""INSERT INTO clinics (name, phone, email, password_hash, address) 
@@ -27,4 +25,3 @@ def store_refresh_token(db, clinic_id: int ,refresh_token: str):
 def delete_refresh_token(db, refresh_token: str):
     with db.cursor() as cursor:
         cursor.execute("DELETE FROM refresh_tokens WHERE token = %s", (refresh_token,))
-        
