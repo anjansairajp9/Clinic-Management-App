@@ -1,6 +1,10 @@
 from fastapi import FastAPI, Depends
 
-from backend.routes import auth_route
+from backend.routes import (
+    auth_route,
+    patient_route
+)
+
 from backend.database.db import get_db
 
 app = FastAPI()
@@ -12,19 +16,6 @@ def health_check():
     }
 
 
-@app.get("/test-db")
-def test_db(db=Depends(get_db)):
-    with db.cursor() as cursor:
-        cursor.execute(
-            "SELECT 1 AS test"
-        )
-
-        result = cursor.fetchall()
-
-    return {
-        "database_connected": True,
-        "result": result
-    }
-
-
 app.include_router(auth_route.router)
+
+app.include_router(patient_route.router)
