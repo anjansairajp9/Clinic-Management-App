@@ -34,3 +34,11 @@ class ForgotPassword(BaseModel):
 class ForgotPasswordResponse(BaseModel):
     message: str
     reset_token: str | None = None
+
+
+class ResetPassword(BaseModel):
+    token: str
+    new_password: str = Field(..., min_length=8)
+
+class ResetPasswordResponse(BaseModel):
+    message: str

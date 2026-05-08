@@ -20,7 +20,11 @@ from backend.repositories.auth_repository import (
     delete_refresh_token,
     get_clinic_by_refresh_token,
     store_password_reset_token,
-    delete_existing_password_reset_tokens
+    delete_existing_password_reset_tokens,
+    get_clinic_by_password_reset_tokens,
+    set_new_clinic_password,
+    mark_password_reset_token_used,
+    delete_refresh_token_by_id_after_password_reset
 )
 
 def create_clinic_service(db, data):
@@ -148,6 +152,35 @@ def forgot_password_service(db, data):
         return {
             "message": "If account exists, reset link has been sent",
             "reset_token": reset_token
+        }
+    except Exception:
+        db.rollback()
+        raise
+
+
+def reset_password_service(db, data):
+    try:
+        clinic = get_clinic_by_password_reset_tokens(db, data.token)
+        if not clinic:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid or Expired Token"
+            )
+        
+        clinic_id = clinic["clinic_id"]
+
+        hashed_password = hash_password(data.new_password)
+
+        set_new_clinic_password(db, clinic_id, hashed_password)
+
+        mark_password_reset_token_used(db, data.token)
+
+        delete_refresh_token_by_id_after_password_reset(db, clinic_id)
+
+        db.commit()
+
+        return {
+            "message": "Password Reset Successful"
         }
     except Exception:
         db.rollback()
