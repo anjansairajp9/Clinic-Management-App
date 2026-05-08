@@ -10,7 +10,7 @@ def create_clinic(db, name: str, phone: str, email: str, hashed_password: str, a
 
 def get_clinic_by_email(db, email: str):
     with db.cursor() as cursor:
-        cursor.execute("SELECT id, email, password_hash FROM clinics WHERE email = %s", (email,))
+        cursor.execute("SELECT id, email, password_hash, is_super_admin FROM clinics WHERE email = %s", (email,))
 
         return cursor.fetchone()
     
@@ -32,7 +32,8 @@ def get_clinic_by_refresh_token(db, refresh_token: str):
         cursor.execute(
              """SELECT
                     refresh_tokens.clinic_id,
-                    clinics.email
+                    clinics.email,
+                    clinics.is_super_admin
                 FROM refresh_tokens
                 JOIN clinics
                     ON clinics.id = refresh_tokens.clinic_id

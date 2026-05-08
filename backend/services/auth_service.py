@@ -67,6 +67,7 @@ def login_clinic_service(db, data):
         clinic_id = clinic["id"]
         email = clinic["email"]
         hashed_password = clinic["password_hash"]
+        is_super_admin = clinic["is_super_admin"]
 
         if not verify_password(data.password, hashed_password):
             raise HTTPException(
@@ -77,6 +78,7 @@ def login_clinic_service(db, data):
         access_token = create_access_token({
             "clinic_id": clinic_id,
             "email": email,
+            "is_super_admin": is_super_admin,
             "token_type": "access"
         })
 
@@ -117,10 +119,12 @@ def create_new_access_token_service(db, refresh_token: str):
         
         clinic_id = clinic["clinic_id"]
         email = clinic["email"]
+        is_super_admin = clinic["is_super_admin"]
 
         access_token = create_access_token({
             "clinic_id": clinic_id,
             "email": email,
+            "is_super_admin": is_super_admin,
             "token_type": "access"
         })
 

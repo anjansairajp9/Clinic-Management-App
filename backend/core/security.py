@@ -40,8 +40,9 @@ def get_current_clinic(credentials: HTTPAuthorizationCredentials = Depends(secur
 
         clinic_id = payload.get("clinic_id")
         email = payload.get("email")
+        is_super_admin = payload.get("is_super_admin")
         token_type = payload.get("token_type")
-
+        
         if clinic_id is None or email is None or token_type != "access":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -50,7 +51,8 @@ def get_current_clinic(credentials: HTTPAuthorizationCredentials = Depends(secur
         
         return {
             "clinic_id": clinic_id,
-            "email": email
+            "email": email,
+            "is_super_admin": is_super_admin
         }
     except JWTError:
         raise HTTPException(
@@ -59,3 +61,13 @@ def get_current_clinic(credentials: HTTPAuthorizationCredentials = Depends(secur
         )
     except Exception:
         raise
+
+
+def require_super_admin(current_clinic=Depends(get_current_clinic)):
+    if not current_clinic["is_super_admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied"
+        )
+    
+    return current_clinic
