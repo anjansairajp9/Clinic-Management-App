@@ -9,7 +9,8 @@ from backend.repositories.patient_repository import (
     create_patient,
     create_patient_medical_history,
     get_patient_by_phone,
-    get_patient_by_id
+    get_patient_by_id,
+    search_patients
 )
 
 def create_patient_service(db, clinic_id: int, data: PatientCreate):
@@ -64,5 +65,25 @@ def get_patient_by_id_service(db, clinic_id: int, patient_id: int):
             )
         
         return patient
+    except Exception:
+        raise
+
+
+def search_patients_service(db, clinic_id: int, query: str, page: int, limit: int):
+    try:
+        query = query.strip()
+        if not query:
+            raise HTTPException(
+                status_code=400,
+                detail="Search Query is Required"
+            )
+        
+        offset = (page - 1) * limit
+
+        patients = search_patients(db, clinic_id, query, limit, offset)
+        if not patients:
+            return []
+        
+        return patients
     except Exception:
         raise

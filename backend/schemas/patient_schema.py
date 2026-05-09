@@ -41,3 +41,11 @@ class PatientDetailResponse(BaseModel):
     medical_history: dict
     created_at: datetime
     updated_at: datetime
+
+
+class PatientSearchResponse(BaseModel):
+    id: int
+    name: str
+    phone: str
+    gender: GenderEnum
+    dob: date

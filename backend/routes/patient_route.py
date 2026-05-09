@@ -1,14 +1,16 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Query
 
 from backend.schemas.patient_schema import (
     PatientCreate,
     PatientCreateResponse,
-    PatientDetailResponse
+    PatientDetailResponse,
+    PatientSearchResponse
 )
 
 from backend.services.patient_service import (
     create_patient_service,
-    get_patient_by_id_service
+    get_patient_by_id_service,
+    search_patients_service
 )
 
 from backend.database.db import get_db
@@ -19,6 +21,17 @@ router = APIRouter()
 @router.post("/patients", response_model=PatientCreateResponse, status_code=status.HTTP_201_CREATED)
 def create_patient(data: PatientCreate, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
     return create_patient_service(db, current_clinic["clinic_id"], data)
+
+
+@router.get("/patients/search", response_model=list[PatientSearchResponse], status_code=status.HTTP_200_OK)
+def search_patients(
+    query: str, 
+    page: int = Query(1, ge=1), 
+    limit: int = Query(10, ge=10, le=50), 
+    current_clinic=Depends(get_current_clinic), 
+    db=Depends(get_db)
+):
+    return search_patients_service(db, current_clinic["clinic_id"], query, page, limit)
 
 
 @router.get("/patients/{patient_id}", response_model=PatientDetailResponse, status_code=status.HTTP_200_OK)
