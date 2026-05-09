@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from psycopg2 import errors
 
-from backend.schemas.patient_schema import PatientCreate
+from backend.schemas.patient_schema import PatientCreate, PatientUpdate
 
 from backend.core.utils import format_phn_number
 
@@ -10,7 +10,8 @@ from backend.repositories.patient_repository import (
     create_patient_medical_history,
     get_patient_by_phone,
     get_patient_by_id,
-    search_patients
+    search_patients,
+    update_patient_details
 )
 
 def create_patient_service(db, clinic_id: int, data: PatientCreate):
@@ -86,4 +87,57 @@ def search_patients_service(db, clinic_id: int, query: str, page: int, limit: in
         
         return patients
     except Exception:
+        raise
+
+
+def update_patient_service(db, clinic_id: int, patient_id: int, data: PatientUpdate):
+    try:
+        existing_patient = get_patient_by_id(db, clinic_id, patient_id)
+        if not existing_patient:
+            raise HTTPException(
+                status_code=404,
+                detail="Patient Not Found"
+)
+
+        update_data = data.model_dump(exclude_unset=True)
+        if not update_data:
+            raise HTTPException(
+                status_code=400,
+                detail="No fields provided for update"
+)
+
+        if "phone" in update_data:
+            formatted_phone = format_phn_number(update_data["phone"])
+
+            duplicate_patient = get_patient_by_phone(db, clinic_id, formatted_phone)
+
+            if duplicate_patient and duplicate_patient["id"] != patient_id:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Phone Number Already Exists"
+                )
+
+            update_data["phone"] = formatted_phone
+
+        updated_patient = update_patient_details(db, clinic_id, patient_id, update_data)
+        if not updated_patient:
+            raise HTTPException(
+                status_code=400,
+                detail="Patient Update Failed"
+            )
+
+        db.commit()
+
+        return updated_patient
+    except HTTPException:
+        db.rollback()
+        raise
+    except errors.UniqueViolation:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Number Already Exists"
+        )
+    except Exception:
+        db.rollback()
         raise

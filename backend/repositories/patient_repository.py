@@ -71,3 +71,38 @@ def search_patients(db, clinic_id: int, query: str, limit: int, offset: int):
             """, (clinic_id, f"%{query}%", f"%{query}%", limit, offset))
         
         return cursor.fetchall()
+
+
+def update_patient_details(db, clinic_id: int, patient_id: int, update_data: dict):
+    fields = []
+    values = []
+
+    for key, value in update_data.items():
+        fields.append(f"{key} = %s")
+        values.append(value)
+
+    fields.append("updated_at = NOW()")
+
+    values.extend([clinic_id, patient_id])
+
+    query = f"""
+        UPDATE patients
+        SET {", ".join(fields)}
+        WHERE clinic_id = %s
+        AND id = %s
+        AND is_active = TRUE
+        RETURNING
+            id,
+            name,
+            phone,
+            gender,
+            dob,
+            notes,
+            created_at,
+            updated_at
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query, tuple(values))
+
+        return cursor.fetchone()
