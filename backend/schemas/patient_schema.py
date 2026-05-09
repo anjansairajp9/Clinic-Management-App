@@ -29,3 +29,15 @@ class PatientCreateResponse(BaseModel):
     dob: date
     notes: str | None = None
     created_at: datetime
+
+
+class PatientDetailResponse(BaseModel):
+    id: int
+    name: str
+    phone: str
+    gender: GenderEnum
+    dob: date
+    notes: str | None = None
+    medical_history: dict
+    created_at: datetime
+    updated_at: datetime

@@ -27,3 +27,27 @@ def get_patient_by_phone(db, clinic_id: int, phone: str):
                        (clinic_id, phone))
         
         return cursor.fetchone()
+
+
+def get_patient_by_id(db, clinic_id: int, patient_id: int):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """SELECT
+                    patients.id,
+                    patients.name,
+                    patients.phone,
+                    patients.gender,
+                    patients.dob,
+                    patients.notes,
+                    patient_medical_history.data AS medical_history,
+                    patients.created_at,
+                    patients.updated_at
+                FROM patients
+                JOIN patient_medical_history
+                    ON patients.id = patient_medical_history.patient_id
+                WHERE patients.clinic_id = %s
+                AND patients.id = %s
+                AND patients.is_active = TRUE
+            """, (clinic_id, patient_id))
+        
+        return cursor.fetchone()

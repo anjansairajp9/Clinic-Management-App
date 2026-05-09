@@ -8,7 +8,8 @@ from backend.core.utils import format_phn_number
 from backend.repositories.patient_repository import (
     create_patient,
     create_patient_medical_history,
-    get_patient_by_phone
+    get_patient_by_phone,
+    get_patient_by_id
 )
 
 def create_patient_service(db, clinic_id: int, data: PatientCreate):
@@ -50,4 +51,18 @@ def create_patient_service(db, clinic_id: int, data: PatientCreate):
         )
     except Exception:
         db.rollback()
+        raise
+
+
+def get_patient_by_id_service(db, clinic_id: int, patient_id: int):
+    try:
+        patient = get_patient_by_id(db, clinic_id, patient_id)
+        if not patient:
+            raise HTTPException(
+                status_code=404,
+                detail="Patient Not Found"
+            )
+        
+        return patient
+    except Exception:
         raise
