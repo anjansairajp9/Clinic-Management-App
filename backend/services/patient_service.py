@@ -11,7 +11,8 @@ from backend.repositories.patient_repository import (
     get_patient_by_phone,
     get_patient_by_id,
     search_patients,
-    update_patient_details
+    update_patient_details,
+    soft_delete_patient
 )
 
 def create_patient_service(db, clinic_id: int, data: PatientCreate):
@@ -97,14 +98,14 @@ def update_patient_service(db, clinic_id: int, patient_id: int, data: PatientUpd
             raise HTTPException(
                 status_code=404,
                 detail="Patient Not Found"
-)
+            )
 
         update_data = data.model_dump(exclude_unset=True)
         if not update_data:
             raise HTTPException(
                 status_code=400,
                 detail="No fields provided for update"
-)
+            )
 
         if "phone" in update_data:
             formatted_phone = format_phn_number(update_data["phone"])
@@ -138,6 +139,28 @@ def update_patient_service(db, clinic_id: int, patient_id: int, data: PatientUpd
             status_code=409,
             detail="Number Already Exists"
         )
+    except Exception:
+        db.rollback()
+        raise
+
+
+def delete_patient_service(db, clinic_id: int, patient_id: int):
+    try:
+        patient = soft_delete_patient(db, clinic_id, patient_id)
+        if not patient:
+            raise HTTPException(
+                status_code=404,
+                detail="Patient Not Found"
+            )
+        
+        db.commit()
+
+        return {
+            "message": "Patient Deleted Successfully"
+        }
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception:
         db.rollback()
         raise

@@ -106,3 +106,18 @@ def update_patient_details(db, clinic_id: int, patient_id: int, update_data: dic
         cursor.execute(query, tuple(values))
 
         return cursor.fetchone()
+
+
+def soft_delete_patient(db, clinic_id: int, patient_id: int):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """UPDATE patients 
+             SET is_active = FALSE,
+                 updated_at = NOW() 
+             WHERE clinic_id = %s 
+             AND id = %s
+             AND is_active = TRUE
+             RETURNING id
+             """, (clinic_id, patient_id))
+        
+        return cursor.fetchone()

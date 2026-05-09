@@ -6,14 +6,16 @@ from backend.schemas.patient_schema import (
     PatientDetailResponse,
     PatientSearchResponse,
     PatientUpdate,
-    PatientUpdateResponse
+    PatientUpdateResponse,
+    PatientDeleteResponse
 )
 
 from backend.services.patient_service import (
     create_patient_service,
     get_patient_by_id_service,
     search_patients_service,
-    update_patient_service
+    update_patient_service,
+    delete_patient_service
 )
 
 from backend.database.db import get_db
@@ -50,3 +52,8 @@ def update_patient_details(
     db=Depends(get_db)
 ):
     return update_patient_service(db, current_clinic["clinic_id"], patient_id, data)
+
+
+@router.delete("/patients/{patient_id}", response_model=PatientDeleteResponse, status_code=status.HTTP_200_OK)
+def delete_patient(patient_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
+    return delete_patient_service(db, current_clinic["clinic_id"], patient_id)
