@@ -1,11 +1,10 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 
 from backend.routes import (
     auth_route,
     patient_route
 )
 
-from backend.database.db import get_db
 
 app = FastAPI()
 
