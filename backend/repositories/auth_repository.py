@@ -1,3 +1,4 @@
+# REGISTER 
 def create_clinic(db, name: str, phone: str, email: str, hashed_password: str, address: str | None):
     with db.cursor() as cursor:
         cursor.execute("""INSERT INTO clinics (name, phone, email, password_hash, address) 
@@ -6,8 +7,9 @@ def create_clinic(db, name: str, phone: str, email: str, hashed_password: str, a
                         (name, phone, email, hashed_password, address))
         
         return cursor.fetchone()
-    
 
+    
+# LOGIN, FORGOT PASSWORD
 def get_clinic_by_email(db, email: str):
     with db.cursor() as cursor:
         cursor.execute("SELECT id, email, password_hash, is_super_admin FROM clinics WHERE email = %s", (email,))
@@ -20,13 +22,15 @@ def store_refresh_token(db, clinic_id: int ,refresh_token: str):
         cursor.execute("""INSERT INTO refresh_tokens (clinic_id, token, expires_at) 
                         VALUES (%s, %s, NOW() + INTERVAL '10 days')""",
                         (clinic_id, refresh_token))
+     
 
-
+# LOGOUT
 def delete_refresh_token(db, refresh_token: str):
     with db.cursor() as cursor:
         cursor.execute("DELETE FROM refresh_tokens WHERE token = %s", (refresh_token,))
 
 
+# REFRESH(NEW ACCESS TOKEN)
 def get_clinic_by_refresh_token(db, refresh_token: str):
     with db.cursor() as cursor:
         cursor.execute(
@@ -44,6 +48,7 @@ def get_clinic_by_refresh_token(db, refresh_token: str):
         return cursor.fetchone()
 
 
+# FORGOT PASSWORD
 def store_password_reset_token(db, clinic_id: int, reset_token: str, expires_at):
     with db.cursor() as cursor:
         cursor.execute("INSERT INTO password_reset_tokens (clinic_id, token, expires_at) VALUES (%s, %s, %s)",
@@ -55,6 +60,7 @@ def delete_existing_password_reset_tokens(db, clinic_id: int):
         cursor.execute("DELETE FROM password_reset_tokens WHERE clinic_id = %s AND used = FALSE", (clinic_id,))
 
 
+# RESET PASSWORD
 def get_clinic_by_password_reset_tokens(db, reset_token: str):
     with db.cursor() as cursor:
         cursor.execute("""SELECT clinic_id 

@@ -1,5 +1,6 @@
 from psycopg2.extras import Json
 
+# REGISTER PATIENT
 def create_patient(db, clinic_id: int, name: str, phone: str, gender: str, dob, notes: str | None):
     with db.cursor() as cursor:
         cursor.execute("""INSERT INTO patients (clinic_id, name, phone, gender, dob, notes) 
@@ -16,7 +17,7 @@ def create_patient_medical_history(db, patient_id: int):
                        VALUES (%s, %s)""", 
                        (patient_id, Json({})))
 
-
+# REGISTER PATIENT, UPDATE PATIENT
 def get_patient_by_phone(db, clinic_id: int, phone: str):
     with db.cursor() as cursor:
         cursor.execute("""SELECT id, name, phone 
@@ -29,6 +30,7 @@ def get_patient_by_phone(db, clinic_id: int, phone: str):
         return cursor.fetchone()
 
 
+# GET PATIENT BY ID, UPDATE PATIENT
 def get_patient_by_id(db, clinic_id: int, patient_id: int):
     with db.cursor() as cursor:
         cursor.execute(
@@ -53,6 +55,7 @@ def get_patient_by_id(db, clinic_id: int, patient_id: int):
         return cursor.fetchone()
 
 
+# SEARCH PATIENTS
 def search_patients(db, clinic_id: int, query: str, limit: int, offset: int):
     with db.cursor() as cursor:
         cursor.execute(
@@ -73,6 +76,7 @@ def search_patients(db, clinic_id: int, query: str, limit: int, offset: int):
         return cursor.fetchall()
 
 
+# UPDATE PATIENT DETAILS
 def update_patient_details(db, clinic_id: int, patient_id: int, update_data: dict):
     fields = []
     values = []
@@ -108,6 +112,7 @@ def update_patient_details(db, clinic_id: int, patient_id: int, update_data: dic
         return cursor.fetchone()
 
 
+# SOFT DELETE PATIENT
 def soft_delete_patient(db, clinic_id: int, patient_id: int):
     with db.cursor() as cursor:
         cursor.execute(
