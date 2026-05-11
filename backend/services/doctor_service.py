@@ -10,7 +10,8 @@ from backend.repositories.doctor_repository import (
     get_doctor_by_phone,
     get_doctor_by_id,
     search_doctors,
-    update_doctor_details
+    update_doctor_details,
+    soft_delete_doctor
 )
 
 def create_doctor_service(db, clinic_id: int, data: DoctorCreate):
@@ -133,6 +134,28 @@ def update_doctor_details_service(db, clinic_id: int, doctor_id: int, data: Doct
             status_code=409,
             detail="Phone Number Already Exists"
         )
+    except Exception:
+        db.rollback()
+        raise
+
+
+def delete_doctor_service(db, clinic_id: int, doctor_id: int):
+    try:
+        doctor = soft_delete_doctor(db, clinic_id, doctor_id)
+        if not doctor:
+            raise HTTPException(
+                status_code=404,
+                detail="Doctor Not Found"
+            )
+        
+        db.commit()
+
+        return {
+            "message": "Doctor Deleted Successfully"
+        }
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception:
         db.rollback()
         raise

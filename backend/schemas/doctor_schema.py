@@ -38,3 +38,7 @@ class DoctorUpdate(BaseModel):
     phone : str | None = Field(default=None, min_length=10, max_length=15)
     specialization: str | None = None
     notes: str | None = None
+
+
+class DoctorDeleteResponse(BaseModel):
+    message: str

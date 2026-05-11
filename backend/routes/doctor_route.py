@@ -5,14 +5,16 @@ from backend.schemas.doctor_schema import (
     DoctorCreateResponse,
     DoctorDetailResponse,
     DoctorSearchResponse,
-    DoctorUpdate
+    DoctorUpdate,
+    DoctorDeleteResponse
 )
 
 from backend.services.doctor_service import (
     create_doctor_service,
     get_doctor_by_id_service,
     search_doctors_service,
-    update_doctor_details_service
+    update_doctor_details_service,
+    delete_doctor_service
 )
 
 from backend.database.db import get_db
@@ -44,3 +46,8 @@ def get_doctor_by_id(doctor_id: int, current_clinic=Depends(get_current_clinic),
 @router.patch("/doctors/{doctor_id}", response_model=DoctorDetailResponse, status_code=status.HTTP_200_OK)
 def update_doctor(doctor_id: int, data: DoctorUpdate, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
     return update_doctor_details_service(db, current_clinic["clinic_id"], doctor_id, data)
+
+
+@router.delete("/doctors/{doctor_id}", response_model=DoctorDeleteResponse, status_code=status.HTTP_200_OK)
+def delete_doctor(doctor_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
+    return delete_doctor_service(db, current_clinic["clinic_id"], doctor_id)
