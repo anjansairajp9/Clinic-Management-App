@@ -24,3 +24,10 @@ class DoctorDetailResponse(BaseModel):
     notes: str | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class DoctorSearchResponse(BaseModel):
+    id: int
+    name: str
+    phone: str
+    specialization: str 

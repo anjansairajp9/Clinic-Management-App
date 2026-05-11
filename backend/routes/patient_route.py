@@ -35,7 +35,7 @@ def create_patient(data: PatientCreate, current_clinic=Depends(get_current_clini
 def search_patients(
     query: str, 
     page: int = Query(1, ge=1), 
-    limit: int = Query(10, ge=10, le=50), 
+    limit: int = Query(10, ge=1, le=50), 
     current_clinic=Depends(get_current_clinic), 
     db=Depends(get_db)
 ):

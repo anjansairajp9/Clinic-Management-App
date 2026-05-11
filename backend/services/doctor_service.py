@@ -8,7 +8,8 @@ from backend.schemas.doctor_schema import DoctorCreate
 from backend.repositories.doctor_repository import (
     create_doctor,
     get_doctor_by_phone,
-    get_doctor_by_id
+    get_doctor_by_id,
+    search_doctors
 )
 
 def create_doctor_service(db, clinic_id: int, data: DoctorCreate):
@@ -59,5 +60,25 @@ def get_doctor_by_id_service(db, clinic_id: int, doctor_id: int):
             )
         
         return doctor
+    except Exception:
+        raise
+
+
+def search_doctors_service(db, clinic_id: int, query: str, page: int, limit: int):
+    try:
+        query = query.strip()
+        if not query:
+            raise HTTPException(
+                status_code=400,
+                detail="Search Query is Required"
+            )
+        
+        offset = (page - 1) * limit
+
+        doctors = search_doctors(db, clinic_id, query, limit, offset)
+        if not doctors:
+            return []
+        
+        return doctors
     except Exception:
         raise
