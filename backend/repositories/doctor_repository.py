@@ -9,6 +9,7 @@ def create_doctor(db, clinic_id: int, name: str, phone: str, specialization: str
         return cursor.fetchone()
     
 
+# REGISTER DOCTOR, UPDATE DOCTOR
 def get_doctor_by_phone(db, clinic_id: int, phone: str):
     with db.cursor() as cursor:
         cursor.execute(
@@ -23,7 +24,7 @@ def get_doctor_by_phone(db, clinic_id: int, phone: str):
         return cursor.fetchone()
 
 
-# GET DOCTOR BY ID
+# GET DOCTOR BY ID, UPDATE DOCTOR
 def get_doctor_by_id(db, clinic_id: int, doctor_id: int):
     with db.cursor() as cursor:
         cursor.execute(
@@ -64,3 +65,31 @@ def search_doctors(db, clinic_id: int, query: str, limit: int, offset: int):
             """, (clinic_id, f"%{query}%", f"%{query}%", f"%{query}%", limit, offset))
         
         return cursor.fetchall()
+
+
+# UPDATE DOCTOR DETAILS
+def update_doctor_details(db, clinic_id: int, doctor_id: int, update_data: dict):
+    fields = []
+    values = []
+
+    for key, value in update_data.items():
+        fields.append(f"{key} = %s")
+        values.append(value)
+
+    fields.append("updated_at = NOW()")
+
+    values.extend([clinic_id, doctor_id])
+
+    query = f"""
+        UPDATE doctors
+        SET {", ".join(fields)}
+        WHERE clinic_id = %s
+        AND id = %s
+        AND is_active = TRUE
+        RETURNING id, name, phone, specialization, notes, created_at, updated_at
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query, tuple(values))
+
+        return cursor.fetchone()

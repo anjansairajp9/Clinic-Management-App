@@ -4,13 +4,15 @@ from backend.schemas.doctor_schema import (
     DoctorCreate,
     DoctorCreateResponse,
     DoctorDetailResponse,
-    DoctorSearchResponse
+    DoctorSearchResponse,
+    DoctorUpdate
 )
 
 from backend.services.doctor_service import (
     create_doctor_service,
     get_doctor_by_id_service,
-    search_doctors_service
+    search_doctors_service,
+    update_doctor_details_service
 )
 
 from backend.database.db import get_db
@@ -37,3 +39,8 @@ def search_doctors(
 @router.get("/doctors/{doctor_id}", response_model=DoctorDetailResponse, status_code=status.HTTP_200_OK)
 def get_doctor_by_id(doctor_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
     return get_doctor_by_id_service(db, current_clinic["clinic_id"], doctor_id)
+
+
+@router.patch("/doctors/{doctor_id}", response_model=DoctorDetailResponse, status_code=status.HTTP_200_OK)
+def update_doctor(doctor_id: int, data: DoctorUpdate, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
+    return update_doctor_details_service(db, current_clinic["clinic_id"], doctor_id, data)

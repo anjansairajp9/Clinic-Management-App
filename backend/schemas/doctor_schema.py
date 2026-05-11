@@ -31,3 +31,10 @@ class DoctorSearchResponse(BaseModel):
     name: str
     phone: str
     specialization: str 
+
+
+class DoctorUpdate(BaseModel):
+    name: str | None = None
+    phone : str | None = Field(default=None, min_length=10, max_length=15)
+    specialization: str | None = None
+    notes: str | None = None
