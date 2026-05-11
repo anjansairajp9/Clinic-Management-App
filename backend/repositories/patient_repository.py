@@ -126,3 +126,25 @@ def soft_delete_patient(db, clinic_id: int, patient_id: int):
              """, (clinic_id, patient_id))
         
         return cursor.fetchone()
+
+
+
+# UPDATE PATIENT MEDICAL HISTORY
+def update_medical_history(db, clinic_id: int, patient_id: int, data: dict):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """UPDATE patient_medical_history
+                SET data = %s,
+                    updated_at = NOW()
+                FROM patients
+                WHERE patients.id = patient_medical_history.patient_id
+                AND patients.clinic_id = %s
+                AND patients.id = %s
+                AND patients.is_active = TRUE
+                RETURNING 
+                    patient_medical_history.patient_id,
+                    patient_medical_history.data AS medical_history,
+                    patient_medical_history.updated_at
+            """, (Json(data), clinic_id, patient_id))
+        
+        return cursor.fetchone()

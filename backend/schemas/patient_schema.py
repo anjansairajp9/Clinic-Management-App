@@ -71,3 +71,12 @@ class PatientUpdateResponse(BaseModel):
 
 class PatientDeleteResponse(BaseModel):
     message: str
+
+
+class PatientMedicalHistory(BaseModel):
+    data: dict
+
+class PatientMedicalHistoryResponse(BaseModel):
+    patient_id: int
+    medical_history: dict
+    updated_at: datetime

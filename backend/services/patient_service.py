@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from psycopg2 import errors
 
-from backend.schemas.patient_schema import PatientCreate, PatientUpdate
+from backend.schemas.patient_schema import PatientCreate, PatientUpdate, PatientMedicalHistory
 
 from backend.core.utils import format_phn_number
 
@@ -12,7 +12,8 @@ from backend.repositories.patient_repository import (
     get_patient_by_id,
     search_patients,
     update_patient_details,
-    soft_delete_patient
+    soft_delete_patient,
+    update_medical_history
 )
 
 def create_patient_service(db, clinic_id: int, data: PatientCreate):
@@ -158,6 +159,26 @@ def delete_patient_service(db, clinic_id: int, patient_id: int):
         return {
             "message": "Patient Deleted Successfully"
         }
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+
+def update_medical_history_service(db, clinic_id: int, patient_id: int, data: PatientMedicalHistory):
+    try:
+        patient = update_medical_history(db, clinic_id, patient_id, data.data)
+        if not patient:
+            raise HTTPException(
+                status_code=404,
+                detail="Patient Not Found"
+            )
+        
+        db.commit()
+
+        return patient
     except HTTPException:
         db.rollback()
         raise
