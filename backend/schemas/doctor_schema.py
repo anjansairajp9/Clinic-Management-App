@@ -14,3 +14,13 @@ class DoctorCreateResponse(BaseModel):
     specialization: str
     notes: str | None = None
     created_at: datetime
+
+
+class DoctorDetailResponse(BaseModel):
+    id: int
+    name: str
+    phone: str
+    specialization: str
+    notes: str | None = None
+    created_at: datetime
+    updated_at: datetime

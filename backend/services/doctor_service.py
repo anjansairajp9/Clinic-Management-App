@@ -7,7 +7,8 @@ from backend.schemas.doctor_schema import DoctorCreate
 
 from backend.repositories.doctor_repository import (
     create_doctor,
-    get_doctor_by_phone
+    get_doctor_by_phone,
+    get_doctor_by_id
 )
 
 def create_doctor_service(db, clinic_id: int, data: DoctorCreate):
@@ -45,4 +46,18 @@ def create_doctor_service(db, clinic_id: int, data: DoctorCreate):
         )
     except Exception:
         db.rollback()
+        raise
+
+
+def get_doctor_by_id_service(db, clinic_id: int, doctor_id: int):
+    try:
+        doctor = get_doctor_by_id(db, clinic_id, doctor_id)
+        if not doctor:
+            raise HTTPException(
+                status_code=404,
+                detail="Doctor Not Found"
+            )
+        
+        return doctor
+    except Exception:
         raise

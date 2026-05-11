@@ -21,3 +21,24 @@ def get_doctor_by_phone(db, clinic_id: int, phone: str):
             """, (clinic_id, phone))
         
         return cursor.fetchone()
+
+
+# GET DOCTOR BY ID
+def get_doctor_by_id(db, clinic_id: int, doctor_id: int):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """SELECT
+                    id,
+                    name,
+                    phone,
+                    specialization,
+                    notes,
+                    created_at,
+                    updated_at
+                FROM doctors
+                WHERE clinic_id = %s
+                AND id = %s
+                AND is_active = TRUE
+            """, (clinic_id, doctor_id))
+        
+        return cursor.fetchone()
