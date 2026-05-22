@@ -13,6 +13,13 @@ from backend.core.security import (
 
 from backend.core.utils import format_phn_number
 
+from backend.schemas.auth_schema import (
+    RegisterClinic,
+    LoginClinic,
+    ForgotPassword,
+    ResetPassword
+)
+
 from backend.repositories.auth_repository import (
     create_clinic, 
     get_clinic_by_email, 
@@ -27,7 +34,7 @@ from backend.repositories.auth_repository import (
     delete_refresh_token_by_id_after_password_reset
 )
 
-def create_clinic_service(db, data):
+def create_clinic_service(db, data: RegisterClinic):
     hashed_password = hash_password(data.password)
     formatted_phone = format_phn_number(data.phone)
 
@@ -54,7 +61,7 @@ def create_clinic_service(db, data):
         raise 
 
 
-def login_clinic_service(db, data):
+def login_clinic_service(db, data: LoginClinic):
     try:
         clinic = get_clinic_by_email(db, data.email)
 
@@ -136,7 +143,7 @@ def create_new_access_token_service(db, refresh_token: str):
         raise
 
 
-def forgot_password_service(db, data):
+def forgot_password_service(db, data: ForgotPassword):
     try:
         clinic = get_clinic_by_email(db, data.email)
         if not clinic:
@@ -162,7 +169,7 @@ def forgot_password_service(db, data):
         raise
 
 
-def reset_password_service(db, data):
+def reset_password_service(db, data: ResetPassword):
     try:
         clinic = get_clinic_by_password_reset_tokens(db, data.token)
         if not clinic:
