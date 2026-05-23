@@ -13,7 +13,8 @@ from backend.schemas.appointment_schema import (
 from backend.repositories.appointment_repository import (
     create_appointment,
     get_existing_appointment,
-    get_patient_existing_appointment
+    get_patient_existing_appointment,
+    get_appointment_by_id
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -85,4 +86,21 @@ def create_appointment_service(db, clinic_id: int, data: CreateAppointment):
         raise
     except Exception:
         db.rollback()
+        raise
+
+
+def get_appointment_by_id_service(db, clinic_id: int, appointment_id: int):
+    try:
+        appointment = get_appointment_by_id(db, clinic_id, appointment_id)
+
+        if not appointment:
+            raise HTTPException(
+                status_code=404,
+                detail="Appointment Not Found"
+            )
+        
+        appointment["appointment_time"] = appointment["appointment_time"].astimezone(IST)
+        
+        return appointment
+    except Exception:
         raise

@@ -50,3 +50,44 @@ def get_patient_existing_appointment(db, clinic_id: int, patient_id: int, appoin
                         """,(clinic_id, patient_id, appointment_time))
 
         return cursor.fetchone()
+
+
+# GET APPOINTMENT BY ID
+def get_appointment_by_id(db, clinic_id: int, appointment_id: int):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """SELECT
+
+                    appointments.id AS id,
+
+                    patients.id AS patient_id,
+                    patients.name AS patient_name,
+                    patients.phone AS patient_phone,
+
+                    doctors.id AS doctor_id,
+                    doctors.name AS doctor_name,
+                    doctors.phone AS doctor_phone,
+                    doctors.specialization AS doctor_specialization,
+
+                    appointments.appointment_time AS appointment_time,
+                    appointments.status AS status,
+                    appointments.complaint AS complaint,
+                    appointments.notes AS notes,
+                    appointments.total_amount AS total_amount,
+                    appointments.created_at AS created_at,
+                    appointments.updated_at AS updated_at
+                
+                FROM appointments
+
+                JOIN patients
+                    ON appointments.patient_id = patients.id
+
+                JOIN doctors 
+                    ON appointments.doctor_id = doctors.id
+
+                WHERE appointments.clinic_id = %s
+                AND appointments.id = %s
+                AND appointments.is_active = TRUE
+            """, (clinic_id, appointment_id))
+        
+        return cursor.fetchone()
