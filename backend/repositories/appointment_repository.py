@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 
 # CREATE APPOINTMENT
 def create_appointment(
@@ -91,3 +91,89 @@ def get_appointment_by_id(db, clinic_id: int, appointment_id: int):
             """, (clinic_id, appointment_id))
         
         return cursor.fetchone()
+
+
+# SEARCH APPOINTMENTS
+def search_appointments(
+        db, clinic_id: int, query: str | None, status: str | None, appointment_date: date | None, limit: int, offset: int
+):
+    conditions = [
+        "appointments.clinic_id = %s",
+        "appointments.is_active = TRUE"
+    ]
+
+    values = [clinic_id]
+
+    if query:
+        conditions.append(
+            """
+            (
+                patients.name ILIKE %s
+                OR patients.phone ILIKE %s
+                OR doctors.name ILIKE %s
+                OR doctors.phone ILIKE %s
+            )
+            """
+        )
+
+        search_term = f"%{query}%"
+
+        values.extend([
+            search_term,
+            search_term,
+            search_term,
+            search_term
+        ])
+
+    if status:
+        conditions.append(
+            "appointments.status = %s"
+        )
+
+        values.append(status)
+
+    if appointment_date:
+        conditions.append(
+            "DATE(appointments.appointment_time) = %s"
+        )
+
+        values.append(appointment_date)
+
+    values.extend([limit, offset])
+
+    query_sql = f"""
+        SELECT
+            appointments.id AS id,
+
+            patients.name AS patient_name,
+            patients.phone AS patient_phone,
+
+            doctors.name AS doctor_name,
+            doctors.phone AS doctor_phone,
+
+            appointments.appointment_time AS appointment_time,
+            appointments.status AS status,
+            appointments.complaint AS complaint,
+            appointments.notes AS notes,
+            appointments.total_amount AS total_amount
+
+        FROM appointments
+
+        JOIN patients
+            ON appointments.patient_id = patients.id
+
+        JOIN doctors
+            ON appointments.doctor_id = doctors.id
+
+        WHERE {" AND ".join(conditions)}
+
+        ORDER BY appointments.appointment_time DESC
+
+        LIMIT %s
+        OFFSET %s
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query_sql, tuple(values))
+
+        return cursor.fetchall()    

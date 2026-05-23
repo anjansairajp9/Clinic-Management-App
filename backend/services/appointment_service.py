@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from zoneinfo import ZoneInfo
 
 from backend.repositories.patient_repository import get_patient_by_id
@@ -14,7 +14,8 @@ from backend.repositories.appointment_repository import (
     create_appointment,
     get_existing_appointment,
     get_patient_existing_appointment,
-    get_appointment_by_id
+    get_appointment_by_id,
+    search_appointments
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -102,5 +103,26 @@ def get_appointment_by_id_service(db, clinic_id: int, appointment_id: int):
         appointment["appointment_time"] = appointment["appointment_time"].astimezone(IST)
         
         return appointment
+    except Exception:
+        raise
+
+
+def search_appointments_service(
+        db, clinic_id: int, query: str|None, status: str|None, appointment_date: date|None, page: int, limit: int
+):
+    try:
+        if query:
+            query = query.strip()
+        
+        offset = (page - 1) * limit
+
+        appointments = search_appointments(db, clinic_id, query, status, appointment_date, limit, offset)
+        if not appointments:
+            return []
+        
+        for appointment in appointments:
+            appointment["appointment_time"] = appointment["appointment_time"].astimezone(IST)
+        
+        return appointments
     except Exception:
         raise
