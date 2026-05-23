@@ -9,13 +9,16 @@ from backend.schemas.appointment_schema import (
     CreateAppointmentResponse,
     AppointmentDetailResponse,
     AppointmentSearchResponse,
-    AppointmentStatusEnum
+    AppointmentStatusEnum,
+    AppointmentUpdate,
+    AppointmentUpdateResponse
 )
 
 from backend.services.appointment_service import (
     create_appointment_service,
     get_appointment_by_id_service,
-    search_appointments_service
+    search_appointments_service,
+    update_appointment_service
 )
 
 
@@ -46,3 +49,12 @@ def search_appointments(
 )
 def get_appointment_by_id(appointment_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
     return get_appointment_by_id_service(db, current_clinic["clinic_id"], appointment_id)
+
+
+@router.patch(
+    "/appointments/{appointment_id}", response_model=AppointmentUpdateResponse, status_code=status.HTTP_200_OK
+)
+def update_appointment(
+    appointment_id: int, data: AppointmentUpdate, current_clinic=Depends(get_current_clinic), db=Depends(get_db)
+):
+    return update_appointment_service(db, current_clinic["clinic_id"], appointment_id, data)

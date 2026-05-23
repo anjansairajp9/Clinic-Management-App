@@ -7,7 +7,8 @@ from backend.repositories.patient_repository import get_patient_by_id
 from backend.repositories.doctor_repository import get_doctor_by_id
 
 from backend.schemas.appointment_schema import (
-    CreateAppointment
+    CreateAppointment,
+    AppointmentUpdate
 )
 
 from backend.repositories.appointment_repository import (
@@ -15,7 +16,8 @@ from backend.repositories.appointment_repository import (
     get_existing_appointment,
     get_patient_existing_appointment,
     get_appointment_by_id,
-    search_appointments
+    search_appointments,
+    update_appointment_details
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -125,4 +127,102 @@ def search_appointments_service(
         
         return appointments
     except Exception:
+        raise
+
+
+def update_appointment_service(db, clinic_id: int, appointment_id: int, data: AppointmentUpdate):
+    try:
+        existing_appointment = get_appointment_by_id(db, clinic_id, appointment_id)
+        if not existing_appointment:
+            raise HTTPException(
+                status_code=404,
+                detail="Appointment Not Found"
+            )
+        
+        if existing_appointment["status"] != "scheduled":
+            raise HTTPException(
+                status_code=409,
+                detail="Only Scheduled Appointments Can Be Modified"
+            )
+        
+        update_data = data.model_dump(exclude_unset=True)
+        if not update_data:
+            raise HTTPException(
+                status_code=400,
+                detail="No Fields Provided For Update"
+            )
+        
+        if "doctor_id" in update_data:
+            doctor = get_doctor_by_id(db, clinic_id, update_data["doctor_id"])
+            if not doctor:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Doctor Not Found"
+                )
+            
+        scheduling_changed = any([
+            "doctor_id" in update_data,
+            "appointment_date" in update_data,
+            "appointment_time" in update_data
+        ])
+
+        if scheduling_changed:
+            doctor_id = update_data.get("doctor_id", existing_appointment["doctor_id"])
+
+            existing_time = existing_appointment["appointment_time"].astimezone(IST)
+
+            appointment_date = update_data.get("appointment_date", existing_time.date())
+
+            appointment_time = update_data.get("appointment_time", existing_time.time())
+
+            local_datetime = datetime.combine(appointment_date, appointment_time, tzinfo=IST)
+
+            appointment_datetime_utc = local_datetime.astimezone(timezone.utc)
+
+            if appointment_datetime_utc <= datetime.now(timezone.utc):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Enter a valid appointment time"
+                )
+            
+            doctor_conflict = get_existing_appointment(db, clinic_id, doctor_id, appointment_datetime_utc)
+            if doctor_conflict and doctor_conflict["id"] != appointment_id:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Doctor Already Booked"
+                )
+            
+            patient_conflict = get_patient_existing_appointment(
+                db, clinic_id, existing_appointment["patient_id"], appointment_datetime_utc
+            )
+            if patient_conflict and patient_conflict["id"] != appointment_id:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Patient Already Has Appointment At This Time"
+                )
+            
+            update_data["doctor_id"] = doctor_id
+            update_data["appointment_time"] = appointment_datetime_utc
+
+            update_data.pop("appointment_date", None)
+
+        updated_appointment = update_appointment_details(db, clinic_id, appointment_id, update_data)
+        if not updated_appointment:
+            raise HTTPException(
+                status_code=400,
+                detail="Appointment Update Failed"
+            )
+        
+        db.commit()
+
+        updated_appointment = get_appointment_by_id(db, clinic_id, appointment_id)
+
+        updated_appointment["appointment_time"] = updated_appointment["appointment_time"].astimezone(IST)
+
+        return updated_appointment
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
         raise

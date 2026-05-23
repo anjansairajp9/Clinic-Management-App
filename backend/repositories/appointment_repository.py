@@ -24,6 +24,7 @@ def create_appointment(
         return cursor.fetchone()
 
 
+# CREATE APPOINTMENT, UPDATE APPOINTMENT DETAILS
 def get_existing_appointment(db, clinic_id: int, doctor_id: int, appointment_time: datetime):
     with db.cursor() as cursor:
         cursor.execute("""SELECT id
@@ -37,7 +38,7 @@ def get_existing_appointment(db, clinic_id: int, doctor_id: int, appointment_tim
         
         return cursor.fetchone()
     
-
+# CREATE APPOINTMENT, UPDATE APPOINTMENT DETAILS
 def get_patient_existing_appointment(db, clinic_id: int, patient_id: int, appointment_time: datetime):
     with db.cursor() as cursor:
         cursor.execute("""SELECT id
@@ -52,7 +53,7 @@ def get_patient_existing_appointment(db, clinic_id: int, patient_id: int, appoin
         return cursor.fetchone()
 
 
-# GET APPOINTMENT BY ID
+# GET APPOINTMENT BY ID, UPDATE APPOINTMENT DETAILS
 def get_appointment_by_id(db, clinic_id: int, appointment_id: int):
     with db.cursor() as cursor:
         cursor.execute(
@@ -177,3 +178,34 @@ def search_appointments(
         cursor.execute(query_sql, tuple(values))
 
         return cursor.fetchall()    
+
+
+# UPDATE APPOINTMENT DETAILS
+def update_appointment_details(db, clinic_id: int, appointment_id: int, update_data: dict):
+    fields = []
+    values = []
+
+    for key, value in update_data.items():
+        fields.append(f"{key} = %s")
+        values.append(value)
+    
+    fields.append("updated_at = NOW()")
+
+    values.extend([clinic_id, appointment_id])
+
+    query = f"""
+        UPDATE appointments
+        SET {", ".join(fields)}
+
+        WHERE clinic_id = %s
+        AND id = %s
+        AND is_active = TRUE
+
+        RETURNING 
+            id, patient_id, doctor_id, appointment_time, status, complaint, notes, total_amount, created_at, updated_at
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query, tuple(values))
+
+        return cursor.fetchone()

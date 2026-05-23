@@ -66,3 +66,35 @@ class AppointmentSearchResponse(BaseModel):
     complaint: str | None = None
     notes: str | None = None
     total_amount: Decimal
+
+
+class AppointmentUpdate(BaseModel):
+    doctor_id: int | None = None
+
+    appointment_date: date | None = None
+    appointment_time: time | None = None
+    status: AppointmentStatusEnum | None = None
+    complaint: str | None = None
+    notes: str | None = None
+    total_amount: Decimal | None = Field(default=None, ge=0)
+
+
+class AppointmentUpdateResponse(BaseModel):
+    id: int
+
+    patient_id: int
+    patient_name: str
+    patient_phone: str
+
+    doctor_id: int
+    doctor_name: str
+    doctor_phone: str
+    doctor_specialization: str
+
+    appointment_time: datetime
+    status: AppointmentStatusEnum
+    complaint: str | None = None
+    notes: str | None = None
+    total_amount: Decimal
+    created_at: datetime
+    updated_at: datetime
