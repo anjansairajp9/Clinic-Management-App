@@ -53,7 +53,7 @@ def get_patient_existing_appointment(db, clinic_id: int, patient_id: int, appoin
         return cursor.fetchone()
 
 
-# GET APPOINTMENT BY ID, UPDATE APPOINTMENT DETAILS
+# GET APPOINTMENT BY ID, UPDATE APPOINTMENT DETAILS, SOFT DELETE APPOINTMENT
 def get_appointment_by_id(db, clinic_id: int, appointment_id: int):
     with db.cursor() as cursor:
         cursor.execute(
@@ -208,4 +208,20 @@ def update_appointment_details(db, clinic_id: int, appointment_id: int, update_d
     with db.cursor() as cursor:
         cursor.execute(query, tuple(values))
 
+        return cursor.fetchone()
+
+
+# SOFT DELETE APPOINTMENT
+def soft_delete_appointment(db, clinic_id: int, appointment_id: int):
+    with db.cursor() as cursor:
+        cursor.execute("""UPDATE appointments
+                          SET is_active = FALSE,
+                              updated_at = NOW()
+                          WHERE clinic_id = %s
+                          AND id = %s
+                          AND status = 'scheduled'
+                          AND is_active = TRUE
+                          RETURNING id
+                    """, (clinic_id, appointment_id))
+        
         return cursor.fetchone()

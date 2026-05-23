@@ -17,7 +17,8 @@ from backend.repositories.appointment_repository import (
     get_patient_existing_appointment,
     get_appointment_by_id,
     search_appointments,
-    update_appointment_details
+    update_appointment_details,
+    soft_delete_appointment
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -220,6 +221,41 @@ def update_appointment_service(db, clinic_id: int, appointment_id: int, data: Ap
         updated_appointment["appointment_time"] = updated_appointment["appointment_time"].astimezone(IST)
 
         return updated_appointment
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+
+def delete_appointment_service(db, clinic_id: int, appointment_id: int):
+    try:
+        appointment = get_appointment_by_id(db, clinic_id, appointment_id)
+        if not appointment:
+            raise HTTPException(
+                status_code=404,
+                detail="Appointment Not Found"
+            )
+        
+        if appointment["status"] != "scheduled":
+            raise HTTPException(
+                status_code=409,
+                detail="Only Scheduled Appointments Can Be Deleted"
+            )
+        
+        deleted_appointment = soft_delete_appointment(db, clinic_id, appointment_id)
+        if not deleted_appointment:
+            raise HTTPException(
+                status_code=404,
+                detail="Appointment Not Found"
+            )
+        
+        db.commit()
+
+        return {
+            "message": "Appointment Deleted Successfully"
+        }
     except HTTPException:
         db.rollback()
         raise

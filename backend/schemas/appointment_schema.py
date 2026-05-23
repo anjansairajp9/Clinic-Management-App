@@ -78,7 +78,6 @@ class AppointmentUpdate(BaseModel):
     notes: str | None = None
     total_amount: Decimal | None = Field(default=None, ge=0)
 
-
 class AppointmentUpdateResponse(BaseModel):
     id: int
 
@@ -98,3 +97,7 @@ class AppointmentUpdateResponse(BaseModel):
     total_amount: Decimal
     created_at: datetime
     updated_at: datetime
+
+
+class AppointmentDeleteResponse(BaseModel):
+    message: str

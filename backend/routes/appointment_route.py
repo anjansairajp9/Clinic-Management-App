@@ -11,14 +11,16 @@ from backend.schemas.appointment_schema import (
     AppointmentSearchResponse,
     AppointmentStatusEnum,
     AppointmentUpdate,
-    AppointmentUpdateResponse
+    AppointmentUpdateResponse,
+    AppointmentDeleteResponse
 )
 
 from backend.services.appointment_service import (
     create_appointment_service,
     get_appointment_by_id_service,
     search_appointments_service,
-    update_appointment_service
+    update_appointment_service,
+    delete_appointment_service
 )
 
 
@@ -58,3 +60,10 @@ def update_appointment(
     appointment_id: int, data: AppointmentUpdate, current_clinic=Depends(get_current_clinic), db=Depends(get_db)
 ):
     return update_appointment_service(db, current_clinic["clinic_id"], appointment_id, data)
+
+
+@router.delete(
+    "/appointments/{appointment_id}", response_model=AppointmentDeleteResponse, status_code=status.HTTP_200_OK
+)
+def delete_appointment(appointment_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
+    return delete_appointment_service(db, current_clinic["clinic_id"], appointment_id)
