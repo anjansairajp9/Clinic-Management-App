@@ -101,3 +101,41 @@ class AppointmentUpdateResponse(BaseModel):
 
 class AppointmentDeleteResponse(BaseModel):
     message: str
+
+
+class PatientAppointmentHistoryResponse(BaseModel):
+    id: int
+
+    patient_name: str
+    patient_phone: str
+
+    doctor_name: str
+    doctor_phone: str
+    doctor_specialization: str
+
+    appointment_time: datetime
+    status: AppointmentStatusEnum
+    complaint: str | None = None
+    notes: str | None = None
+    total_amount: Decimal
+    created_at: datetime
+    updated_at: datetime
+
+
+class DoctorAppointmentResponse(BaseModel):
+    id: int
+
+    patient_name: str
+    patient_phone: str
+
+    doctor_name: str
+    doctor_phone: str
+    doctor_specialization: str
+
+    appointment_time: datetime
+    status: AppointmentStatusEnum
+    complaint: str | None = None
+    notes: str | None = None
+    total_amount: Decimal
+    created_at: datetime
+    updated_at: datetime

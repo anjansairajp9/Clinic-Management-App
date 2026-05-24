@@ -12,7 +12,9 @@ from backend.schemas.appointment_schema import (
     AppointmentStatusEnum,
     AppointmentUpdate,
     AppointmentUpdateResponse,
-    AppointmentDeleteResponse
+    AppointmentDeleteResponse,
+    PatientAppointmentHistoryResponse,
+    DoctorAppointmentResponse
 )
 
 from backend.services.appointment_service import (
@@ -20,7 +22,9 @@ from backend.services.appointment_service import (
     get_appointment_by_id_service,
     search_appointments_service,
     update_appointment_service,
-    delete_appointment_service
+    delete_appointment_service,
+    get_patient_appointment_history_service,
+    get_doctor_appointments_service
 )
 
 
@@ -67,3 +71,39 @@ def update_appointment(
 )
 def delete_appointment(appointment_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
     return delete_appointment_service(db, current_clinic["clinic_id"], appointment_id)
+
+
+@router.get(
+    "/patients/{patient_id}/appointments", 
+    response_model=list[PatientAppointmentHistoryResponse], 
+    status_code=status.HTTP_200_OK
+)
+def patient_appointment_history(
+    patient_id: int,
+    appointment_date: date | None = None,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=50),
+    current_clinic=Depends(get_current_clinic), 
+    db=Depends(get_db)
+):
+    return get_patient_appointment_history_service(
+        db, current_clinic["clinic_id"], patient_id, appointment_date, page, limit
+    )
+
+
+@router.get(
+    "/doctors/{doctor_id}/appointments",
+    response_model=list[DoctorAppointmentResponse],
+    status_code=status.HTTP_200_OK
+)
+def doctor_appointments(
+    doctor_id: int,
+    appointment_date: date | None = None,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=50),
+    current_clinic=Depends(get_current_clinic),
+    db=Depends(get_db)
+):
+    return get_doctor_appointments_service(
+        db, current_clinic["clinic_id"], doctor_id, appointment_date, page, limit
+    )

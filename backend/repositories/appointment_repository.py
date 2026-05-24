@@ -225,3 +225,127 @@ def soft_delete_appointment(db, clinic_id: int, appointment_id: int):
                     """, (clinic_id, appointment_id))
         
         return cursor.fetchone()
+
+
+# PATIENT APPOINTMENT HISTORY
+def get_patient_appointment_history(
+    db, clinic_id: int, patient_id: int, appointment_date: date | None, limit: int, offset: int
+):
+    conditions = [
+        "appointments.clinic_id = %s",
+        "appointments.patient_id = %s",
+        "appointments.is_active = TRUE"
+    ]
+
+    values = [clinic_id, patient_id]
+
+    if appointment_date:
+        conditions.append(
+            "DATE(appointments.appointment_time) = %s"
+        )
+
+        values.append(appointment_date)
+
+    values.extend([limit, offset])
+
+    query = f"""
+        SELECT
+            appointments.id AS id,
+
+            patients.name AS patient_name,
+            patients.phone AS patient_phone,
+
+            doctors.name AS doctor_name,
+            doctors.phone AS doctor_phone,
+            doctors.specialization AS doctor_specialization,
+
+            appointments.appointment_time AS appointment_time,
+            appointments.status AS status,
+            appointments.complaint AS complaint,
+            appointments.notes AS notes,
+            appointments.total_amount AS total_amount,
+            appointments.created_at AS created_at,
+            appointments.updated_at AS updated_at
+
+        FROM appointments
+
+        JOIN patients
+            ON appointments.patient_id = patients.id
+
+        JOIN doctors
+            ON appointments.doctor_id = doctors.id
+
+        WHERE {" AND ".join(conditions)}
+
+        ORDER BY appointments.appointment_time DESC
+
+        LIMIT %s
+        OFFSET %s
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query, tuple(values))
+
+        return cursor.fetchall()
+
+
+# DOCTOR APPOINTMENTS
+def get_doctor_appointments(
+        db, clinic_id: int, doctor_id: int, appointment_date: date | None, limit: int, offset: int
+):
+    conditions = [
+        "appointments.clinic_id = %s",
+        "appointments.doctor_id = %s",
+        "appointments.is_active = TRUE"
+    ]
+
+    values = [clinic_id, doctor_id]
+
+    if appointment_date:
+        conditions.append(
+            "DATE(appointments.appointment_time) = %s"
+        )
+
+        values.append(appointment_date)
+
+    values.extend([limit, offset])
+
+    query = f"""
+        SELECT
+            appointments.id AS id,
+
+            patients.name AS patient_name,
+            patients.phone AS patient_phone,
+
+            doctors.name AS doctor_name,
+            doctors.phone AS doctor_phone,
+            doctors.specialization AS doctor_specialization,
+
+            appointments.appointment_time AS appointment_time,
+            appointments.status AS status,
+            appointments.complaint AS complaint,
+            appointments.notes AS notes,
+            appointments.total_amount AS total_amount,
+            appointments.created_at AS created_at,
+            appointments.updated_at AS updated_at
+
+        FROM appointments
+
+        JOIN patients
+            ON appointments.patient_id = patients.id
+
+        JOIN doctors
+            ON appointments.doctor_id = doctors.id
+
+        WHERE {" AND ".join(conditions)}
+
+        ORDER BY appointments.appointment_time ASC
+
+        LIMIT %s
+        OFFSET %s
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query, tuple(values))
+
+        return cursor.fetchall()
