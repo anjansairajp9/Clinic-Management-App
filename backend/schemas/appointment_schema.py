@@ -139,3 +139,7 @@ class DoctorAppointmentResponse(BaseModel):
     total_amount: Decimal
     created_at: datetime
     updated_at: datetime
+
+
+class AppointmentStatusUpdate(BaseModel):
+    status: AppointmentStatusEnum

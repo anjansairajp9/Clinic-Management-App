@@ -424,3 +424,18 @@ def get_appointment_schedule(
         cursor.execute(query, tuple(values))
 
         return cursor.fetchall()
+
+
+# UPDATE APPOINTMENT STATUS
+def update_appointment_status(db, clinic_id: int, appointment_id: int, status: str):
+    with db.cursor() as cursor:
+        cursor.execute("""UPDATE appointments
+                          SET status = %s,
+                              updated_at = NOW()
+                          WHERE clinic_id = %s
+                          AND id = %s
+                          AND is_active = TRUE
+                          RETURNING id
+                    """,(status, clinic_id, appointment_id))
+        
+        return cursor.fetchone()

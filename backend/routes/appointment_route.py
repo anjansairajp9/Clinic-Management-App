@@ -14,7 +14,8 @@ from backend.schemas.appointment_schema import (
     AppointmentUpdateResponse,
     AppointmentDeleteResponse,
     PatientAppointmentHistoryResponse,
-    DoctorAppointmentResponse
+    DoctorAppointmentResponse,
+    AppointmentStatusUpdate
 )
 
 from backend.services.appointment_service import (
@@ -25,7 +26,8 @@ from backend.services.appointment_service import (
     delete_appointment_service,
     get_patient_appointment_history_service,
     get_doctor_appointments_service,
-    get_appointment_schedule_service
+    get_appointment_schedule_service,
+    update_appointment_status_service
 )
 
 
@@ -125,3 +127,12 @@ def appointment_schedule_dashboard(
     db=Depends(get_db)
 ):
     return get_appointment_schedule_service(db, current_clinic["clinic_id"], appointment_date, doctor_id, status, page, limit)
+
+
+@router.patch(
+    "/appointments/{appointment_id}/status", response_model=AppointmentUpdateResponse, status_code=status.HTTP_200_OK
+)
+def update_appointment_status(
+    appointment_id: int, data: AppointmentStatusUpdate, current_clinic=Depends(get_current_clinic), db=Depends(get_db)
+):
+    return update_appointment_status_service(db, current_clinic["clinic_id"], appointment_id, data)

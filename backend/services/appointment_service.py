@@ -8,7 +8,8 @@ from backend.repositories.doctor_repository import get_doctor_by_id
 
 from backend.schemas.appointment_schema import (
     CreateAppointment,
-    AppointmentUpdate
+    AppointmentUpdate,
+    AppointmentStatusUpdate
 )
 
 from backend.repositories.appointment_repository import (
@@ -21,7 +22,8 @@ from backend.repositories.appointment_repository import (
     soft_delete_appointment,
     get_patient_appointment_history,
     get_doctor_appointments,
-    get_appointment_schedule
+    get_appointment_schedule,
+    update_appointment_status
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -347,4 +349,41 @@ def get_appointment_schedule_service(
 
         return appointments
     except Exception:
+        raise
+
+
+def update_appointment_status_service(db, clinic_id: int, appointment_id: int, data: AppointmentStatusUpdate):
+    try:
+        appointment = get_appointment_by_id(db, clinic_id, appointment_id)
+        if not appointment:
+            raise HTTPException(
+                status_code=404,
+                detail="Appointment Not Found"
+            )
+        
+        if appointment["status"] == data.status:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Appointment Already {data.status.replace('_', ' ').title()}"
+            )
+        
+        updated_record = update_appointment_status(db, clinic_id, appointment_id, data.status)
+        if not updated_record:
+            raise HTTPException(
+                status_code=400,
+                detail="Failed To Update Appointment Status"
+            )
+        
+        db.commit()
+
+        updated_appointment = get_appointment_by_id(db, clinic_id, appointment_id)
+
+        updated_appointment["appointment_time"] = updated_appointment["appointment_time"].astimezone(IST)
+
+        return updated_appointment
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
         raise
