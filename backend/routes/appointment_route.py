@@ -24,7 +24,8 @@ from backend.services.appointment_service import (
     update_appointment_service,
     delete_appointment_service,
     get_patient_appointment_history_service,
-    get_doctor_appointments_service
+    get_doctor_appointments_service,
+    get_appointment_schedule_service
 )
 
 
@@ -38,7 +39,7 @@ def create_appointment(data: CreateAppointment, current_clinic=Depends(get_curre
 @router.get("/appointments/search", response_model=list[AppointmentSearchResponse], status_code=status.HTTP_200_OK)
 def search_appointments(
     query: str | None = None,
-    status_filter: AppointmentStatusEnum | None = Query(default=None, alias="status"),
+    status: AppointmentStatusEnum | None = Query(default=None),
     appointment_date: date | None = None,
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=50),
@@ -46,7 +47,7 @@ def search_appointments(
     db=Depends(get_db)
 ):
     return search_appointments_service(
-        db, current_clinic["clinic_id"], query, status_filter, appointment_date, page, limit
+        db, current_clinic["clinic_id"], query, status, appointment_date, page, limit
     )
 
 
@@ -107,3 +108,20 @@ def doctor_appointments(
     return get_doctor_appointments_service(
         db, current_clinic["clinic_id"], doctor_id, appointment_date, page, limit
     )
+
+
+@router.get(
+    "/appointments",
+    response_model=list[PatientAppointmentHistoryResponse],
+    status_code=status.HTTP_200_OK
+)
+def appointment_schedule_dashboard(
+    appointment_date: date | None = None,
+    doctor_id: int | None = None,
+    status: AppointmentStatusEnum | None = Query(default=None), 
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=50),
+    current_clinic=Depends(get_current_clinic),
+    db=Depends(get_db)
+):
+    return get_appointment_schedule_service(db, current_clinic["clinic_id"], appointment_date, doctor_id, status, page, limit)

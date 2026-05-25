@@ -20,7 +20,8 @@ from backend.repositories.appointment_repository import (
     update_appointment_details,
     soft_delete_appointment,
     get_patient_appointment_history,
-    get_doctor_appointments
+    get_doctor_appointments,
+    get_appointment_schedule
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -305,6 +306,39 @@ def get_doctor_appointments_service(
         offset = (page - 1) * limit
 
         appointments = get_doctor_appointments(db, clinic_id, doctor_id, appointment_date, limit, offset)
+        if not appointments:
+            return []
+        
+        for appointment in appointments:
+            appointment["appointment_time"] = appointment["appointment_time"].astimezone(IST)
+
+        return appointments
+    except Exception:
+        raise
+
+
+def get_appointment_schedule_service(
+        db, clinic_id: int, appointment_date: date | None, doctor_id: int | None, status: str | None, page: int, limit: int
+):
+    try:
+        if not appointment_date:
+            appointment_date = datetime.now(IST).date()
+
+        if not status:
+            status = "scheduled"
+
+        if doctor_id:
+            doctor = get_doctor_by_id(db, clinic_id, doctor_id)
+
+            if not doctor:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Doctor Not Found"
+                )
+            
+        offset = (page - 1) * limit
+
+        appointments = get_appointment_schedule(db, clinic_id, appointment_date, doctor_id, status, limit, offset)
         if not appointments:
             return []
         

@@ -349,3 +349,78 @@ def get_doctor_appointments(
         cursor.execute(query, tuple(values))
 
         return cursor.fetchall()
+
+
+# APPOINTMENT SCHEDULE DASHBOARD
+def get_appointment_schedule(
+    db, 
+    clinic_id: int, 
+    appointment_date: date, 
+    doctor_id: int | None, 
+    status: str | None,
+    limit: int,
+    offset: int
+):
+    conditions = [
+        "appointments.clinic_id = %s",
+        "appointments.is_active = TRUE",
+        "DATE(appointments.appointment_time) = %s"
+    ]
+
+    values = [clinic_id, appointment_date]
+
+    if doctor_id:
+        conditions.append(
+            "appointments.doctor_id = %s"
+        )
+
+        values.append(doctor_id)
+
+    if status:
+        conditions.append(
+            "appointments.status = %s"
+        )
+
+        values.append(status)
+
+    values.extend([limit, offset])
+
+    query = f"""
+        SELECT
+            appointments.id AS id,
+
+            patients.name AS patient_name,
+            patients.phone AS patient_phone,
+
+            doctors.name AS doctor_name,
+            doctors.phone AS doctor_phone,
+            doctors.specialization AS doctor_specialization,
+
+            appointments.appointment_time AS appointment_time,
+            appointments.status AS status,
+            appointments.complaint AS complaint,
+            appointments.notes AS notes,
+            appointments.total_amount AS total_amount,
+            appointments.created_at AS created_at,
+            appointments.updated_at AS updated_at
+
+        FROM appointments
+
+        JOIN patients
+            ON appointments.patient_id = patients.id
+
+        JOIN doctors
+            ON appointments.doctor_id = doctors.id
+
+        WHERE {" AND ".join(conditions)}
+
+        ORDER BY appointments.appointment_time ASC
+
+        LIMIT %s
+        OFFSET %s
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query, tuple(values))
+
+        return cursor.fetchall()
