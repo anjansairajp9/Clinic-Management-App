@@ -155,3 +155,44 @@ class DoctorAppointmentResponse(BaseModel):
 
 class AppointmentStatusUpdate(BaseModel):
     status: AppointmentStatusEnum
+
+
+class AppointmentAnalyticsResponse(BaseModel):
+    analytics_date: date
+
+    total_appointments: int
+
+    scheduled_appointments: int
+    walk_in_appointments: int
+
+    completed_appointments: int
+    cancelled_appointments: int
+    no_show_appointments: int
+    pending_appointments: int
+
+    total_revenue: Decimal
+
+
+class AppointmentSummaryCardResponse(BaseModel):
+    id: int
+
+    patient_name: str
+    patient_phone: str
+
+    doctor_name: str
+    doctor_phone: str
+
+    appointment_time: datetime
+    appointment_type: AppointmentTypeEnum
+    status: AppointmentStatusEnum
+
+class AppointmentDashboardSummaryResponse(BaseModel):
+    summary_date: date
+
+    pending_queue: int
+    completed_today: int
+    walk_ins_today: int
+
+    next_appointment: AppointmentSummaryCardResponse | None = None
+
+    upcoming_appointments: list[AppointmentSummaryCardResponse]

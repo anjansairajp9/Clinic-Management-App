@@ -15,7 +15,9 @@ from backend.schemas.appointment_schema import (
     AppointmentDeleteResponse,
     PatientAppointmentHistoryResponse,
     DoctorAppointmentResponse,
-    AppointmentStatusUpdate
+    AppointmentStatusUpdate,
+    AppointmentAnalyticsResponse,
+    AppointmentDashboardSummaryResponse
 )
 
 from backend.services.appointment_service import (
@@ -27,7 +29,9 @@ from backend.services.appointment_service import (
     get_patient_appointment_history_service,
     get_doctor_appointments_service,
     get_appointment_schedule_service,
-    update_appointment_status_service
+    update_appointment_status_service,
+    get_appointment_analytics_service,
+    get_appointment_dashboard_summary_service
 )
 
 
@@ -136,3 +140,23 @@ def update_appointment_status(
     appointment_id: int, data: AppointmentStatusUpdate, current_clinic=Depends(get_current_clinic), db=Depends(get_db)
 ):
     return update_appointment_status_service(db, current_clinic["clinic_id"], appointment_id, data)
+
+
+@router.get(
+    "/appointments/dashboard/stats", response_model=AppointmentAnalyticsResponse, status_code=status.HTTP_200_OK
+)
+def appointment_dashboard_stats(
+    appointment_date: date | None = None,
+    current_clinic=Depends(get_current_clinic),
+    db=Depends(get_db)
+):
+    return get_appointment_analytics_service(db, current_clinic["clinic_id"], appointment_date)
+
+
+@router.get(
+    "/appointments/dashboard/summary",
+    response_model=AppointmentDashboardSummaryResponse,
+    status_code=status.HTTP_200_OK
+)
+def appointment_dashboard_summary(current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
+    return get_appointment_dashboard_summary_service(db, current_clinic["clinic_id"])

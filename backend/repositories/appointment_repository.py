@@ -447,3 +447,155 @@ def update_appointment_status(db, clinic_id: int, appointment_id: int, status: s
                     """,(status, clinic_id, appointment_id))
         
         return cursor.fetchone()
+
+
+# APPOINTMENT ANALYTICS
+def get_appointment_analytics(db, clinic_id: int, appointment_date: date):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """SELECT
+                    COUNT(*) AS total_appointments,
+
+                    COUNT(*) FILTER (
+                        WHERE appointment_type = 'scheduled'
+                    ) AS scheduled_appointments,
+
+                    COUNT(*) FILTER (
+                        WHERE appointment_type = 'walk_in'
+                    ) AS walk_in_appointments,
+
+                    COUNT(*) FILTER (
+                        WHERE status = 'completed'
+                    ) AS completed_appointments,
+
+                    COUNT(*) FILTER (
+                        WHERE status = 'cancelled'
+                    ) AS cancelled_appointments,
+
+                    COUNT(*) FILTER (
+                        WHERE status = 'no_show'
+                    ) AS no_show_appointments,
+
+                    COUNT(*) FILTER (
+                        WHERE status = 'scheduled'
+                    ) AS pending_appointments,
+
+                    COALESCE(
+                        SUM(total_amount)
+                        FILTER (
+                            WHERE status = 'completed'
+                        ),
+                        0
+                    ) AS total_revenue
+
+                FROM appointments
+
+                WHERE clinic_id = %s
+                AND is_active = TRUE
+                AND DATE(appointment_time) = %s
+            """,(clinic_id, appointment_date))
+        
+        return cursor.fetchone()
+
+
+# SUMMARY STATS FOR CURRENT DAY
+def get_appointment_summary_stats(db, clinic_id: int, appointment_date: date):
+    with db.cursor() as cursor:
+        cursor.execute(
+            """SELECT
+                    COUNT(*) FILTER (
+                        WHERE status = 'scheduled'
+                    ) AS pending_queue,
+
+                    COUNT(*) FILTER (
+                        WHERE status = 'completed'
+                    ) AS completed_today,
+
+                    COUNT(*) FILTER (
+                        WHERE appointment_type = 'walk_in'
+                    ) AS walk_ins_today
+
+                FROM appointments
+
+                WHERE clinic_id = %s
+                AND is_active = TRUE
+                AND DATE(appointment_time) = %s
+            """, (clinic_id, appointment_date))
+
+        return cursor.fetchone()
+
+
+# NEXT APPOINTMENT FOR CURRENT DAY
+def get_next_appointment(db, clinic_id: int, current_time: datetime):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """SELECT
+                    appointments.id AS id,
+
+                    patients.name AS patient_name,
+                    patients.phone AS patient_phone,
+
+                    doctors.name AS doctor_name,
+                    doctors.phone AS doctor_phone,
+
+                    appointments.appointment_time AS appointment_time,
+                    appointments.appointment_type AS appointment_type,
+                    appointments.status AS status
+
+                FROM appointments
+
+                JOIN patients
+                    ON appointments.patient_id = patients.id
+
+                JOIN doctors
+                    ON appointments.doctor_id = doctors.id
+
+                WHERE appointments.clinic_id = %s
+                AND appointments.is_active = TRUE
+                AND appointments.status = 'scheduled'
+                AND appointments.appointment_time > %s
+
+                ORDER BY appointments.appointment_time ASC
+
+                LIMIT 1
+            """, (clinic_id, current_time))
+
+        return cursor.fetchone()
+
+
+# UPCOMING APPOINTMENTS FOR CURRENT DAY
+def get_upcoming_appointments(db, clinic_id: int, current_time: datetime):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """SELECT
+                    appointments.id AS id,
+
+                    patients.name AS patient_name,
+                    patients.phone AS patient_phone,
+
+                    doctors.name AS doctor_name,
+                    doctors.phone AS doctor_phone,
+
+                    appointments.appointment_time AS appointment_time,
+                    appointments.appointment_type AS appointment_type,
+                    appointments.status AS status
+
+                FROM appointments
+
+                JOIN patients
+                    ON appointments.patient_id = patients.id
+
+                JOIN doctors
+                    ON appointments.doctor_id = doctors.id
+
+                WHERE appointments.clinic_id = %s
+                AND appointments.is_active = TRUE
+                AND appointments.status = 'scheduled'
+                AND appointments.appointment_time > %s
+
+                ORDER BY appointments.appointment_time ASC
+
+                LIMIT 5
+            """, (clinic_id, current_time))
+
+        return cursor.fetchall()

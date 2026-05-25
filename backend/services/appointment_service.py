@@ -24,7 +24,11 @@ from backend.repositories.appointment_repository import (
     get_patient_appointment_history,
     get_doctor_appointments,
     get_appointment_schedule,
-    update_appointment_status
+    update_appointment_status,
+    get_appointment_analytics,
+    get_appointment_summary_stats,
+    get_next_appointment,
+    get_upcoming_appointments
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -392,4 +396,52 @@ def update_appointment_status_service(db, clinic_id: int, appointment_id: int, d
         raise
     except Exception:
         db.rollback()
+        raise
+
+
+def get_appointment_analytics_service(db, clinic_id: int, appointment_date: date | None):
+    try:
+        if not appointment_date:
+            appointment_date = datetime.now(IST).date()
+
+        analytics = get_appointment_analytics(db, clinic_id, appointment_date)
+
+        return {
+            "analytics_date": appointment_date,
+            **analytics
+        }
+    except Exception:
+        raise
+
+
+def get_appointment_dashboard_summary_service(db, clinic_id: int):
+    try:
+        today = datetime.now(IST).date()
+
+        current_time_utc = datetime.now(timezone.utc)
+
+        summary_stats = get_appointment_summary_stats(db, clinic_id, today)
+
+        next_appointment = get_next_appointment(db, clinic_id, current_time_utc)
+
+        upcoming_appointments = get_upcoming_appointments(db, clinic_id, current_time_utc)
+
+        if next_appointment:
+            next_appointment["appointment_time"] = next_appointment["appointment_time"].astimezone(IST)
+            
+        for appointment in upcoming_appointments:
+            appointment["appointment_time"] = appointment["appointment_time"].astimezone(IST)
+
+        return {
+            "summary_date": today,
+
+            "pending_queue": summary_stats["pending_queue"],
+            "completed_today": summary_stats["completed_today"],
+            "walk_ins_today":summary_stats["walk_ins_today"],
+
+            "next_appointment": next_appointment,
+
+            "upcoming_appointments": upcoming_appointments
+        }
+    except Exception:
         raise
