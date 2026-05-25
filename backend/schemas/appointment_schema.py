@@ -9,10 +9,15 @@ class AppointmentStatusEnum(str, Enum):
     cancelled = "cancelled"
     no_show = "no_show"
 
+class AppointmentTypeEnum(str, Enum):
+    scheduled = "scheduled"
+    walk_in = "walk_in"
+
 
 class CreateAppointment(BaseModel):
     patient_id: int
     doctor_id: int
+    appointment_type: AppointmentTypeEnum = AppointmentTypeEnum.scheduled
     appointment_date: date
     appointment_time: time
     complaint: str | None = None
@@ -23,6 +28,7 @@ class CreateAppointmentResponse(BaseModel):
     id: int
     patient_id: int
     doctor_id: int
+    appointment_type: AppointmentTypeEnum
     appointment_time: datetime
     status: AppointmentStatusEnum
     complaint: str | None = None
@@ -43,6 +49,7 @@ class AppointmentDetailResponse(BaseModel):
     doctor_phone: str
     doctor_specialization: str
 
+    appointment_type: AppointmentTypeEnum
     appointment_time: datetime
     status: AppointmentStatusEnum
     complaint: str | None = None
@@ -61,6 +68,7 @@ class AppointmentSearchResponse(BaseModel):
     doctor_name: str
     doctor_phone: str
 
+    appointment_type: AppointmentTypeEnum
     appointment_time: datetime
     status: AppointmentStatusEnum
     complaint: str | None = None
@@ -71,6 +79,7 @@ class AppointmentSearchResponse(BaseModel):
 class AppointmentUpdate(BaseModel):
     doctor_id: int | None = None
 
+    appointment_type: AppointmentTypeEnum | None = None
     appointment_date: date | None = None
     appointment_time: time | None = None
     status: AppointmentStatusEnum | None = None
@@ -90,6 +99,7 @@ class AppointmentUpdateResponse(BaseModel):
     doctor_phone: str
     doctor_specialization: str
 
+    appointment_type: AppointmentTypeEnum
     appointment_time: datetime
     status: AppointmentStatusEnum
     complaint: str | None = None
@@ -113,6 +123,7 @@ class PatientAppointmentHistoryResponse(BaseModel):
     doctor_phone: str
     doctor_specialization: str
 
+    appointment_type: AppointmentTypeEnum
     appointment_time: datetime
     status: AppointmentStatusEnum
     complaint: str | None = None
@@ -132,6 +143,7 @@ class DoctorAppointmentResponse(BaseModel):
     doctor_phone: str
     doctor_specialization: str
 
+    appointment_type: AppointmentTypeEnum
     appointment_time: datetime
     status: AppointmentStatusEnum
     complaint: str | None = None

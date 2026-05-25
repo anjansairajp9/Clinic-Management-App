@@ -9,6 +9,7 @@ from backend.repositories.doctor_repository import get_doctor_by_id
 from backend.schemas.appointment_schema import (
     CreateAppointment,
     AppointmentUpdate,
+    AppointmentTypeEnum,
     AppointmentStatusUpdate
 )
 
@@ -54,27 +55,28 @@ def create_appointment_service(db, clinic_id: int, data: CreateAppointment):
                 detail="Enter a valid appointment time"
             )
         
-        existing_appointment = get_existing_appointment(db, clinic_id, data.doctor_id, appointment_datetime_utc)
-        if existing_appointment:
+        if data.appointment_type == AppointmentTypeEnum.scheduled:
+            existing_appointment = get_existing_appointment(db, clinic_id, data.doctor_id, appointment_datetime_utc)
+
+            if existing_appointment:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Doctor already booked for this slot"
+                )
+
+        patient_conflict = get_patient_existing_appointment(db, clinic_id, data.patient_id, appointment_datetime_utc)
+        if patient_conflict:
             raise HTTPException(
                 status_code=409,
-                detail="Doctor already booked for this slot"
-            )
-        
-        existing_patient_appointment = get_patient_existing_appointment(
-            db, clinic_id, data.patient_id, appointment_datetime_utc
-        )
-        if existing_patient_appointment:
-            raise HTTPException(
-                status_code=409,
-                detail="Patient already has an appointment for this slot"
+                detail="Patient already has appointment at this time"
             )
 
         appointment = create_appointment(
             db, 
             clinic_id, 
             data.patient_id, 
-            data.doctor_id, 
+            data.doctor_id,
+            data.appointment_type,
             appointment_datetime_utc, 
             data.complaint, 
             data.notes, 
@@ -169,7 +171,8 @@ def update_appointment_service(db, clinic_id: int, appointment_id: int, data: Ap
         scheduling_changed = any([
             "doctor_id" in update_data,
             "appointment_date" in update_data,
-            "appointment_time" in update_data
+            "appointment_time" in update_data,
+            "appointment_type" in update_data
         ])
 
         if scheduling_changed:
@@ -191,16 +194,18 @@ def update_appointment_service(db, clinic_id: int, appointment_id: int, data: Ap
                     detail="Enter a valid appointment time"
                 )
             
-            doctor_conflict = get_existing_appointment(db, clinic_id, doctor_id, appointment_datetime_utc)
-            if doctor_conflict and doctor_conflict["id"] != appointment_id:
-                raise HTTPException(
-                    status_code=409,
-                    detail="Doctor Already Booked"
-                )
-            
-            patient_conflict = get_patient_existing_appointment(
-                db, clinic_id, existing_appointment["patient_id"], appointment_datetime_utc
-            )
+            appointment_type = AppointmentTypeEnum(update_data.get("appointment_type", existing_appointment["appointment_type"]))
+
+            if appointment_type == AppointmentTypeEnum.scheduled:
+
+                doctor_conflict = get_existing_appointment(db, clinic_id, doctor_id, appointment_datetime_utc)
+                if doctor_conflict and doctor_conflict["id"] != appointment_id:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="Doctor Already Booked"
+                    )
+
+            patient_conflict = get_patient_existing_appointment(db, clinic_id, existing_appointment["patient_id"], appointment_datetime_utc)
             if patient_conflict and patient_conflict["id"] != appointment_id:
                 raise HTTPException(
                     status_code=409,
@@ -208,6 +213,7 @@ def update_appointment_service(db, clinic_id: int, appointment_id: int, data: Ap
                 )
             
             update_data["doctor_id"] = doctor_id
+            update_data["appointment_type"] = appointment_type
             update_data["appointment_time"] = appointment_datetime_utc
 
             update_data.pop("appointment_date", None)

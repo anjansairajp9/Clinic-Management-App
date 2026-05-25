@@ -6,19 +6,22 @@ def create_appointment(
         clinic_id: int, 
         patient_id: int, 
         doctor_id: int, 
-        appointment_time: datetime, 
+        appointment_type: str,
+        appointment_time: datetime,
         complaint: str | None,
         notes: str | None,
         total_amount
         ):
     with db.cursor() as cursor:
         cursor.execute("""INSERT INTO 
-                            appointments (clinic_id, patient_id, doctor_id, appointment_time, status, complaint, notes, total_amount)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                            appointments (
+                                clinic_id, patient_id, doctor_id, appointment_type, appointment_time, status, complaint, notes, total_amount 
+                            )
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                        RETURNING 
-                            id, patient_id, doctor_id, appointment_time, status, complaint, notes, total_amount, created_at
+                            id, patient_id, doctor_id, appointment_type, appointment_time, status, complaint, notes, total_amount, created_at
                     """, 
-                    (clinic_id, patient_id, doctor_id, appointment_time, "scheduled", complaint, notes, total_amount)
+                    (clinic_id, patient_id, doctor_id, appointment_type, appointment_time, "scheduled", complaint, notes, total_amount)
                     )
         
         return cursor.fetchone()
@@ -70,6 +73,7 @@ def get_appointment_by_id(db, clinic_id: int, appointment_id: int):
                     doctors.phone AS doctor_phone,
                     doctors.specialization AS doctor_specialization,
 
+                    appointments.appointment_type AS appointment_type,
                     appointments.appointment_time AS appointment_time,
                     appointments.status AS status,
                     appointments.complaint AS complaint,
@@ -152,6 +156,7 @@ def search_appointments(
             doctors.name AS doctor_name,
             doctors.phone AS doctor_phone,
 
+            appointments.appointment_type AS appointment_type,
             appointments.appointment_time AS appointment_time,
             appointments.status AS status,
             appointments.complaint AS complaint,
@@ -202,7 +207,7 @@ def update_appointment_details(db, clinic_id: int, appointment_id: int, update_d
         AND is_active = TRUE
 
         RETURNING 
-            id, patient_id, doctor_id, appointment_time, status, complaint, notes, total_amount, created_at, updated_at
+            id, patient_id, doctor_id, appointment_time, appointment_type, status, complaint, notes, total_amount, created_at, updated_at
     """
 
     with db.cursor() as cursor:
@@ -259,6 +264,7 @@ def get_patient_appointment_history(
             doctors.phone AS doctor_phone,
             doctors.specialization AS doctor_specialization,
 
+            appointments.appointment_type AS appointment_type,
             appointments.appointment_time AS appointment_time,
             appointments.status AS status,
             appointments.complaint AS complaint,
@@ -321,6 +327,7 @@ def get_doctor_appointments(
             doctors.phone AS doctor_phone,
             doctors.specialization AS doctor_specialization,
 
+            appointments.appointment_type AS appointment_type,
             appointments.appointment_time AS appointment_time,
             appointments.status AS status,
             appointments.complaint AS complaint,
@@ -396,6 +403,7 @@ def get_appointment_schedule(
             doctors.phone AS doctor_phone,
             doctors.specialization AS doctor_specialization,
 
+            appointments.appointment_type AS appointment_type,
             appointments.appointment_time AS appointment_time,
             appointments.status AS status,
             appointments.complaint AS complaint,
