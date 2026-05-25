@@ -498,7 +498,7 @@ def get_appointment_analytics(db, clinic_id: int, appointment_date: date):
         return cursor.fetchone()
 
 
-# SUMMARY STATS FOR CURRENT DAY
+# APPOINTMENT DASHBOARD SUMMARY
 def get_appointment_summary_stats(db, clinic_id: int, appointment_date: date):
     with db.cursor() as cursor:
         cursor.execute(
@@ -525,7 +525,6 @@ def get_appointment_summary_stats(db, clinic_id: int, appointment_date: date):
         return cursor.fetchone()
 
 
-# NEXT APPOINTMENT FOR CURRENT DAY
 def get_next_appointment(db, clinic_id: int, current_time: datetime):
     with db.cursor() as cursor:
         cursor.execute(
@@ -563,7 +562,6 @@ def get_next_appointment(db, clinic_id: int, current_time: datetime):
         return cursor.fetchone()
 
 
-# UPCOMING APPOINTMENTS FOR CURRENT DAY
 def get_upcoming_appointments(db, clinic_id: int, current_time: datetime):
     with db.cursor() as cursor:
         cursor.execute(
@@ -598,4 +596,83 @@ def get_upcoming_appointments(db, clinic_id: int, current_time: datetime):
                 LIMIT 5
             """, (clinic_id, current_time))
 
+        return cursor.fetchall()
+
+
+# APPOINTMENT AVAILABILITY SLOTS
+def get_doctor_booked_appointments(
+    db, clinic_id: int, doctor_id: int, appointment_date: date, appointment_id: int | None = None
+):
+    conditions = [
+        "clinic_id = %s",
+        "doctor_id = %s",
+        "is_active = TRUE",
+        "status = 'scheduled'",
+        "DATE(appointment_time) = %s"
+    ]
+
+    values = [clinic_id, doctor_id, appointment_date]
+
+    if appointment_id:
+        conditions.append(
+            "id != %s"
+        )
+
+        values.append(appointment_id)
+
+    query = f"""
+        SELECT
+            appointment_time
+        FROM appointments
+        WHERE {" AND ".join(conditions)}
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query, tuple(values))
+
+        return cursor.fetchall()
+
+
+def get_all_doctors_booked_appointments(
+    db, clinic_id: int, appointment_date: date, appointment_id: int | None = None
+):
+    conditions = [
+        "clinic_id = %s",
+        "is_active = TRUE",
+        "status = 'scheduled'",
+        "DATE(appointment_time) = %s"
+    ]
+
+    values = [clinic_id, appointment_date]
+
+    if appointment_id:
+        conditions.append(
+            "id != %s"
+        )
+
+        values.append(appointment_id)
+
+    query = f"""
+        SELECT
+            doctor_id,
+            appointment_time
+        FROM appointments
+        WHERE {" AND ".join(conditions)}
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query, tuple(values))
+
+        return cursor.fetchall()
+
+
+def get_all_active_doctors(db, clinic_id: int):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """SELECT id
+                FROM doctors
+                WHERE clinic_id = %s
+                AND is_active = TRUE
+            """, (clinic_id,))
+        
         return cursor.fetchall()

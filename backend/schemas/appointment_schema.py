@@ -196,3 +196,13 @@ class AppointmentDashboardSummaryResponse(BaseModel):
     next_appointment: AppointmentSummaryCardResponse | None = None
 
     upcoming_appointments: list[AppointmentSummaryCardResponse]
+
+
+class AppointmentAvailabilitySlotResponse(BaseModel):
+    time: time
+    available: bool
+
+class AppointmentAvailabilityResponse(BaseModel):
+    appointment_date: date
+    doctor_id: int | None = None
+    available_slots: list[AppointmentAvailabilitySlotResponse]

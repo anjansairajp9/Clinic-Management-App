@@ -17,7 +17,8 @@ from backend.schemas.appointment_schema import (
     DoctorAppointmentResponse,
     AppointmentStatusUpdate,
     AppointmentAnalyticsResponse,
-    AppointmentDashboardSummaryResponse
+    AppointmentDashboardSummaryResponse,
+    AppointmentAvailabilityResponse
 )
 
 from backend.services.appointment_service import (
@@ -31,7 +32,8 @@ from backend.services.appointment_service import (
     get_appointment_schedule_service,
     update_appointment_status_service,
     get_appointment_analytics_service,
-    get_appointment_dashboard_summary_service
+    get_appointment_dashboard_summary_service,
+    get_appointment_availability_service
 )
 
 
@@ -40,6 +42,23 @@ router = APIRouter()
 @router.post("/appointments", response_model=CreateAppointmentResponse, status_code=status.HTTP_201_CREATED)
 def create_appointment(data: CreateAppointment, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
     return create_appointment_service(db, current_clinic["clinic_id"], data)
+
+
+@router.get(
+    "/appointments/availability",
+    response_model=AppointmentAvailabilityResponse,
+    status_code=status.HTTP_200_OK
+)
+def get_appointment_availability(
+    appointment_date: date,
+    doctor_id: int | None = None,
+    appointment_id: int | None = None,
+    current_clinic=Depends(get_current_clinic),
+    db=Depends(get_db)
+):
+    return get_appointment_availability_service(
+        db, current_clinic["clinic_id"], appointment_date, doctor_id, appointment_id
+    )
 
 
 @router.get("/appointments/search", response_model=list[AppointmentSearchResponse], status_code=status.HTTP_200_OK)

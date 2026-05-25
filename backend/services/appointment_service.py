@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, date, time, timedelta
 from zoneinfo import ZoneInfo
 
 from backend.repositories.patient_repository import get_patient_by_id
@@ -28,7 +28,10 @@ from backend.repositories.appointment_repository import (
     get_appointment_analytics,
     get_appointment_summary_stats,
     get_next_appointment,
-    get_upcoming_appointments
+    get_upcoming_appointments,
+    get_doctor_booked_appointments,
+    get_all_doctors_booked_appointments,
+    get_all_active_doctors
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -443,5 +446,125 @@ def get_appointment_dashboard_summary_service(db, clinic_id: int):
 
             "upcoming_appointments": upcoming_appointments
         }
+    except Exception:
+        raise
+
+
+def get_appointment_availability_service(
+    db, clinic_id: int, appointment_date: date, doctor_id: int | None, appointment_id: int | None
+):
+    try:
+        today = datetime.now(IST).date()
+
+        if appointment_date < today:
+            raise HTTPException(
+                status_code=400,
+                detail="Past Dates Are Not Allowed"
+            )
+        
+        if doctor_id:
+            doctor = get_doctor_by_id(db,clinic_id, doctor_id)
+
+            if not doctor:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Doctor Not Found"
+                )
+            
+        start_datetime = datetime.combine(appointment_date, time(6, 0), tzinfo=IST)
+
+        end_datetime = datetime.combine(appointment_date, time(22, 0), tzinfo=IST)
+
+        generated_slots = []
+
+        current_slot = start_datetime
+
+        while current_slot <= end_datetime:
+            if appointment_date == today and current_slot <= datetime.now(IST):
+                current_slot += timedelta(minutes=15)
+                continue
+
+            generated_slots.append(current_slot)
+
+            current_slot += timedelta(minutes=15)
+
+        available_slots = []
+
+        if doctor_id:
+            booked_appointments = get_doctor_booked_appointments(db, clinic_id, doctor_id, appointment_date, appointment_id)
+
+            booked_times = [
+                appointment["appointment_time"].astimezone(IST)
+                for appointment in booked_appointments
+            ]
+
+            for slot in generated_slots:
+                is_available = True
+
+                for booked_time in booked_times:
+                    difference = abs((slot - booked_time).total_seconds()) / 60
+
+                    if difference < 30:
+                        is_available = False
+                        break
+
+                available_slots.append({
+                    "time": slot.time(),
+                    "available": is_available
+                })
+        else:
+            doctors = get_all_active_doctors(db, clinic_id)
+
+            doctor_ids = [
+                doctor["id"]
+                for doctor in doctors
+            ]
+
+            if not doctor_ids:
+                raise HTTPException(
+                    status_code=404,
+                    detail="No Active Doctors Found"
+                )
+
+            booked_appointments = get_all_doctors_booked_appointments(db, clinic_id, appointment_date, appointment_id)
+
+            doctor_bookings = {}
+
+            for doctor_id_key in doctor_ids:
+                doctor_bookings[doctor_id_key] = []
+
+            for appointment in booked_appointments:
+                if appointment["doctor_id"] in doctor_bookings:
+                    doctor_bookings[appointment["doctor_id"]].append(appointment["appointment_time"].astimezone(IST))
+
+            for slot in generated_slots:
+                is_available = False
+
+                for doctor_id_key in doctor_ids:
+                    doctor_busy = False
+
+                    for booked_time in doctor_bookings[doctor_id_key]:
+                        difference = abs((slot - booked_time).total_seconds()) / 60
+
+                        if difference < 30:
+                            doctor_busy = True
+                            break
+
+                    if not doctor_busy:
+                        is_available = True
+                        break
+
+                available_slots.append({
+                    "time": slot.time(),
+                    "available": is_available
+                })
+        
+        return {
+            "appointment_date": appointment_date,
+            "doctor_id": doctor_id,
+            "available_slots": available_slots
+        }
+    except HTTPException:
+        raise
     except Exception:
         raise
