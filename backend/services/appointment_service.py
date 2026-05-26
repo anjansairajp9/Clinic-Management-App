@@ -6,6 +6,11 @@ from zoneinfo import ZoneInfo
 from backend.repositories.patient_repository import get_patient_by_id
 from backend.repositories.doctor_repository import get_doctor_by_id
 
+from backend.tasks.whatsapp_task import (
+    send_appointment_confirmation_task,
+    send_appointment_cancelled_task
+)
+
 from backend.schemas.appointment_schema import (
     CreateAppointment,
     AppointmentUpdate,
@@ -31,7 +36,8 @@ from backend.repositories.appointment_repository import (
     get_upcoming_appointments,
     get_doctor_booked_appointments,
     get_all_doctors_booked_appointments,
-    get_all_active_doctors
+    get_all_active_doctors,
+    get_appointment_whatsapp_details
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -97,6 +103,19 @@ def create_appointment_service(db, clinic_id: int, data: CreateAppointment):
             )
         
         db.commit()
+
+        try:
+            whatsapp_details = get_appointment_whatsapp_details(db, clinic_id, appointment["id"])
+            if whatsapp_details:
+                send_appointment_confirmation_task.delay(
+                    phone=whatsapp_details["patient_phone"],
+                    clinic_name=whatsapp_details["clinic_name"],
+                    patient_name=whatsapp_details["patient_name"],
+                    doctor_name=whatsapp_details["doctor_name"],
+                    appointment_time=whatsapp_details["appointment_time"].isoformat()
+                )
+        except Exception as e:
+            print(f"Failed to Queue Appointment Confirmation: {str(e)}")
 
         return appointment
     except HTTPException:
@@ -388,6 +407,19 @@ def update_appointment_status_service(db, clinic_id: int, appointment_id: int, d
             )
         
         db.commit()
+
+        try:
+            if data.status == "cancelled":
+                whatsapp_details = get_appointment_whatsapp_details(db, clinic_id, appointment_id)
+                if whatsapp_details:
+                    send_appointment_cancelled_task.delay(
+                        phone=whatsapp_details["patient_phone"],
+                        clinic_name=whatsapp_details["clinic_name"],
+                        patient_name=whatsapp_details["patient_name"],
+                        appointment_time=whatsapp_details["appointment_time"].isoformat()
+                    )
+        except Exception as e:
+            print(f"Failed To Queue Cancellation: {str(e)}")
 
         updated_appointment = get_appointment_by_id(db, clinic_id, appointment_id)
 

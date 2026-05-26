@@ -38,5 +38,6 @@ celery.conf.update(
 
 celery.conf.imports = (
     "backend.tasks.test_task",
-    "backend.tasks.test_whatsapp_task"
+    "backend.tasks.test_whatsapp_task",
+    "backend.tasks.whatsapp_task"
 )

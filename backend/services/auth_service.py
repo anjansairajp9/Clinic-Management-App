@@ -12,6 +12,9 @@ from backend.core.security import (
 )
 
 from backend.core.utils import format_phn_number
+from backend.core.config import FRONTEND_URL
+
+from backend.tasks.whatsapp_task import send_password_reset_task
 
 from backend.schemas.auth_schema import (
     RegisterClinic,
@@ -160,9 +163,23 @@ def forgot_password_service(db, data: ForgotPassword):
 
         db.commit()
 
+        try:
+            reset_link = (
+                f"{FRONTEND_URL}"
+                f"/reset-password"
+                f"?token={reset_token}"
+            )
+
+            send_password_reset_task.delay(
+                phone=clinic["phone"],
+                clinic_name=clinic["name"],
+                reset_link=reset_link
+            )
+        except Exception as e:
+            print(f"Failed To Queue Password Reset: {str(e)}")
+
         return {
             "message": "If account exists, reset link has been sent",
-            "reset_token": reset_token
         }
     except Exception:
         db.rollback()

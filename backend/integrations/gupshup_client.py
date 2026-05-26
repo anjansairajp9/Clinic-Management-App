@@ -1,5 +1,6 @@
 import os
 import httpx
+import json
 
 from dotenv import load_dotenv
 
@@ -19,6 +20,8 @@ async def send_message(
     template_variables: dict | None = None
 ):
     try:
+        phone = phone.replace("+", "").replace(" ", "").replace("-", "").strip()
+
         headers = {
             "apikey": GUPSHUP_API_KEY,
             "Content-Type": "application/x-www-form-urlencoded"
@@ -29,7 +32,10 @@ async def send_message(
             "source": GUPSHUP_SOURCE_NUMBER,
             "destination": phone,
             "src.name": GUPSHUP_APP_NAME,
-            "message": f'{{"type":"text","text":"{message}"}}'
+            "message": json.dumps({
+                "type": "text",
+                "text": message
+            })
         }
 
         async with httpx.AsyncClient(timeout=15.0) as client:

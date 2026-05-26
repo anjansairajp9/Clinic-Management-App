@@ -676,3 +676,41 @@ def get_all_active_doctors(db, clinic_id: int):
             """, (clinic_id,))
         
         return cursor.fetchall()
+
+
+
+# --- WHATSAPP DATA QUERIES --- #
+
+# WHATSAPP APPOINTMENT DETAILS
+def get_appointment_whatsapp_details(db, clinic_id: int, appointment_id: int):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """SELECT
+                    appointments.id AS id,
+                    appointments.appointment_time AS appointment_time,
+
+                    patients.name AS patient_name,
+                    patients.phone AS patient_phone,
+
+                    doctors.name AS doctor_name,
+
+                    clinics.name AS clinic_name
+
+                FROM appointments
+
+                JOIN patients
+                    ON appointments.patient_id = patients.id
+
+                JOIN doctors
+                    ON appointments.doctor_id = doctors.id
+
+                JOIN clinics
+                    ON appointments.clinic_id = clinics.id
+
+                WHERE appointments.clinic_id = %s
+                AND appointments.id = %s
+                AND appointments.is_active = TRUE
+            """,(clinic_id, appointment_id)
+        )
+
+        return cursor.fetchone()
