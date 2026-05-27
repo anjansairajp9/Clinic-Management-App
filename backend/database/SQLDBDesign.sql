@@ -5,6 +5,7 @@ CREATE TABLE clinics (
 	email VARCHAR(255) NOT NULL UNIQUE,
 	password_hash TEXT NOT NULL,
 	address TEXT,
+	is_super_admin BOOLEAN DEFAULT FALSE,
 	is_active BOOLEAN DEFAULT TRUE,
 	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
@@ -78,6 +79,7 @@ CREATE TABLE appointments (
 	complaint TEXT,
 	notes TEXT,
 	total_amount NUMERIC(10, 2) DEFAULT 0 CHECK (total_amount >= 0),
+	appointment_type VARCHAR(20) DEFAULT 'scheduled' CHECK (appointment_type IN('scheduled', 'walk_in')), 
 	reminder_sent BOOLEAN DEFAULT FALSE,
 	is_active BOOLEAN DEFAULT TRUE,
 	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -97,6 +99,40 @@ CREATE TABLE appointments (
 		FOREIGN KEY(doctor_id)
 		REFERENCES doctors(id)
 		ON DELETE CASCADE
+);
+
+
+CREATE TABLE treatments (
+    id SERIAL PRIMARY KEY,
+    clinic_id INTEGER NOT NULL,
+    patient_id INTEGER NOT NULL,
+    doctor_id INTEGER NOT NULL,
+    appointment_id INTEGER NOT NULL UNIQUE,
+    diagnosis TEXT NOT NULL,
+    treatment_performed TEXT NOT NULL,
+    medicines_prescribed TEXT,
+    procedure_notes TEXT,
+    follow_up_instructions TEXT,
+    treatment_date DATE NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_treatment_clinic
+        FOREIGN KEY (clinic_id)
+        REFERENCES clinics(id),
+
+    CONSTRAINT fk_treatment_patient
+        FOREIGN KEY (patient_id)
+        REFERENCES patients(id),
+
+    CONSTRAINT fk_treatment_doctor
+        FOREIGN KEY (doctor_id)
+        REFERENCES doctors(id),
+
+    CONSTRAINT fk_treatment_appointment
+        FOREIGN KEY (appointment_id)
+        REFERENCES appointments(id)
 );
 
 
@@ -153,6 +189,7 @@ ON patients(phone);
 CREATE INDEX idx_patients_name
 ON patients(name);
 
+
 CREATE INDEX idx_doctors_clinic_id
 ON doctors(clinic_id);
 
@@ -161,6 +198,7 @@ ON doctors(phone);
 
 CREATE INDEX idx_doctors_name
 ON doctors(name);
+
 
 CREATE INDEX idx_appointments_clinic_id
 ON appointments(clinic_id);
@@ -177,11 +215,30 @@ ON appointments(appointment_time);
 CREATE INDEX idx_appointments_status
 ON appointments(status);
 
+
+CREATE INDEX idx_treatments_clinic_id
+ON treatments(clinic_id);
+
+CREATE INDEX idx_treatments_patient_id
+ON treatments(patient_id);
+
+CREATE INDEX idx_treatments_doctor_id
+ON treatments(doctor_id);
+
+CREATE INDEX idx_treatments_appointment_id
+ON treatments(appointment_id);
+
+CREATE INDEX idx_treatments_treatment_date
+ON treatments(treatment_date);
+
+
 CREATE INDEX idx_payments_appointment_id
 ON payments(appointment_id);
 
+
 CREATE INDEX idx_refresh_tokens_clinic_id
 ON refresh_tokens(clinic_id);
+
 
 CREATE INDEX idx_password_reset_clinic_id
 ON password_reset_tokens(clinic_id);
@@ -196,6 +253,8 @@ SELECT * FROM patient_medical_history;
 SELECT * FROM doctors;
 
 SELECT * FROM appointments;
+
+SELECT * FROM treatments;
 
 SELECT * FROM payments;
 
