@@ -8,7 +8,8 @@ from backend.repositories.doctor_repository import get_doctor_by_id
 
 from backend.tasks.whatsapp_task import (
     send_appointment_confirmation_task,
-    send_appointment_cancelled_task
+    send_appointment_cancelled_task,
+    send_appointment_reminder_task
 )
 
 from backend.schemas.appointment_schema import (
@@ -37,7 +38,9 @@ from backend.repositories.appointment_repository import (
     get_doctor_booked_appointments,
     get_all_doctors_booked_appointments,
     get_all_active_doctors,
-    get_appointment_whatsapp_details
+    get_appointment_whatsapp_details,
+    get_appointments_for_reminder,
+    mark_reminder_sent
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -241,6 +244,7 @@ def update_appointment_service(db, clinic_id: int, appointment_id: int, data: Ap
             update_data["doctor_id"] = doctor_id
             update_data["appointment_type"] = appointment_type
             update_data["appointment_time"] = appointment_datetime_utc
+            update_data["reminder_sent"] = False
 
             update_data.pop("appointment_date", None)
 
@@ -599,4 +603,44 @@ def get_appointment_availability_service(
     except HTTPException:
         raise
     except Exception:
+        raise
+
+
+def process_appointment_reminders_service(db):
+    try:
+        appointments = get_appointments_for_reminder(db)
+        if not appointments:
+            return {
+                "message": "No Appointments For Reminder"
+            }
+        
+        reminders_sent = 0
+
+        for appointment in appointments:
+            try:
+                send_appointment_reminder_task.delay(
+                    phone=appointment["patient_phone"],
+                    clinic_name=appointment["clinic_name"],
+                    patient_name=appointment["patient_name"],
+                    doctor_name=appointment["doctor_name"],
+                    appointment_time=appointment["appointment_time"].isoformat()
+                )
+
+                mark_reminder_sent(db, appointment["id"])
+
+                reminders_sent += 1
+            except Exception as e:
+                print(
+                    f"Failed Reminder For Appointment "
+                    f"{appointment['id']}: "
+                    f"{str(e)}"
+                )
+                
+        db.commit()
+
+        return {
+            "message": f"{reminders_sent} Appointment Reminders Queued"
+        }
+    except Exception:
+        db.rollback()
         raise

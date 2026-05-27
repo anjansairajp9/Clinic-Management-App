@@ -1,4 +1,5 @@
 from celery import Celery
+from celery.schedules import crontab
 from dotenv import load_dotenv
 import os
 import ssl
@@ -33,11 +34,23 @@ celery.conf.update(
 
     redis_backend_use_ssl={
         "ssl_cert_reqs": ssl.CERT_NONE
+    },
+
+    beat_schedule={
+        "process-appointment-reminders": {
+            "task": (
+                "backend.tasks.reminder_task."
+                "process_appointment_reminders_task"
+            ),
+
+            "schedule": crontab(minute="*/15")
+        }
     }
 )
 
 celery.conf.imports = (
     "backend.tasks.test_task",
     "backend.tasks.test_whatsapp_task",
-    "backend.tasks.whatsapp_task"
+    "backend.tasks.whatsapp_task",
+    "backend.tasks.reminder_task"
 )

@@ -714,3 +714,51 @@ def get_appointment_whatsapp_details(db, clinic_id: int, appointment_id: int):
         )
 
         return cursor.fetchone()
+
+
+# APPOINTMENT REMINDER 
+def get_appointments_for_reminder(db):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """SELECT
+                    appointments.id AS id,
+                    appointments.appointment_time AS appointment_time,
+
+                    patients.name AS patient_name,
+                    patients.phone AS patient_phone,
+
+                    doctors.name AS doctor_name,
+
+                    clinics.name AS clinic_name
+
+                FROM appointments
+
+                JOIN patients
+                    ON appointments.patient_id = patients.id
+
+                JOIN doctors
+                    ON appointments.doctor_id = doctors.id
+
+                JOIN clinics
+                    ON appointments.clinic_id = clinics.id
+
+                WHERE appointments.is_active = TRUE
+                AND appointments.status = 'scheduled'
+                AND appointments.reminder_sent = FALSE
+                AND appointments.appointment_time BETWEEN
+                    NOW() + INTERVAL '4 hours'
+                AND
+                    NOW() + INTERVAL '4 hours 15 minutes'
+            """)
+        
+        return cursor.fetchall()
+
+
+# UPDATE REMINDER SENT TO TRUE, APPOINTMENT REMINDER
+def mark_reminder_sent(db, appointment_id: int):
+    with db.cursor() as cursor:
+        cursor.execute("""UPDATE appointments 
+                          SET reminder_sent = TRUE,
+                              updated_at = NOW()
+                          WHERE id = %s
+                       """, (appointment_id,))
