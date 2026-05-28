@@ -37,6 +37,7 @@ class PatientDetailResponse(BaseModel):
     phone: str
     gender: GenderEnum
     dob: date
+    age: int
     notes: str | None = None
     medical_history: dict | None = None
     created_at: datetime
@@ -49,6 +50,7 @@ class PatientSearchResponse(BaseModel):
     phone: str
     gender: GenderEnum
     dob: date
+    age: int
 
 
 class PatientUpdate(BaseModel):
@@ -64,6 +66,7 @@ class PatientUpdateResponse(BaseModel):
     phone: str
     gender: GenderEnum
     dob: date
+    age: int
     notes: str | None = None
     created_at: datetime
     updated_at: datetime

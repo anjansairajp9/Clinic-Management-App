@@ -140,6 +140,14 @@ def get_appointment_by_id_service(db, clinic_id: int, appointment_id: int):
             )
         
         appointment["appointment_time"] = appointment["appointment_time"].astimezone(IST)
+
+        today = date.today()
+        dob = appointment["patient_dob"]
+        age = (today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day)))
+
+        appointment["patient_age"] = age
+
+        appointment.pop("patient_dob")
         
         return appointment
     except Exception:
@@ -159,9 +167,17 @@ def search_appointments_service(
         if not appointments:
             return []
         
+        today = date.today()
+
         for appointment in appointments:
             appointment["appointment_time"] = appointment["appointment_time"].astimezone(IST)
-        
+
+            dob = appointment["patient_dob"]
+            age = (today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day)))
+            appointment["patient_age"] = age
+
+            appointment.pop("patient_dob")
+
         return appointments
     except Exception:
         raise
@@ -322,8 +338,16 @@ def get_patient_appointment_history_service(
         if not appointments:
             return []
         
+        today = date.today()
+
         for appointment in appointments:
             appointment["appointment_time"] = appointment["appointment_time"].astimezone(IST)
+
+            dob = appointment["patient_dob"]
+            age = (today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day)))
+            appointment["patient_age"] = age
+
+            appointment.pop("patient_dob")
 
         return appointments
     except Exception:

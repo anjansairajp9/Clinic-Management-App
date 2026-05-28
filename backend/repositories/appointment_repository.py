@@ -66,6 +66,7 @@ def get_appointment_by_id(db, clinic_id: int, appointment_id: int):
 
                     patients.id AS patient_id,
                     patients.name AS patient_name,
+                    patients.dob AS patient_dob,
                     patients.phone AS patient_phone,
 
                     doctors.id AS doctor_id,
@@ -151,6 +152,7 @@ def search_appointments(
             appointments.id AS id,
 
             patients.name AS patient_name,
+            patients.dob AS patient_dob,
             patients.phone AS patient_phone,
 
             doctors.name AS doctor_name,
@@ -258,6 +260,7 @@ def get_patient_appointment_history(
             appointments.id AS id,
 
             patients.name AS patient_name,
+            patients.dob AS patient_dob,
             patients.phone AS patient_phone,
 
             doctors.name AS doctor_name,

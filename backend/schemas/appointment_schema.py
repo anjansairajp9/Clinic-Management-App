@@ -42,6 +42,7 @@ class AppointmentDetailResponse(BaseModel):
 
     patient_id: int
     patient_name: str
+    patient_age: int
     patient_phone: str
 
     doctor_id: int
@@ -63,6 +64,7 @@ class AppointmentSearchResponse(BaseModel):
     id: int
 
     patient_name: str
+    patient_age: int
     patient_phone: str
 
     doctor_name: str
@@ -117,6 +119,7 @@ class PatientAppointmentHistoryResponse(BaseModel):
     id: int
 
     patient_name: str
+    patient_age: int
     patient_phone: str
 
     doctor_name: str

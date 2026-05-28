@@ -1,6 +1,8 @@
 from fastapi import HTTPException
 from psycopg2 import errors
 
+from datetime import date
+
 from backend.schemas.patient_schema import PatientCreate, PatientUpdate, PatientMedicalHistory
 
 from backend.core.utils import format_phn_number
@@ -67,6 +69,12 @@ def get_patient_by_id_service(db, clinic_id: int, patient_id: int):
                 detail="Patient Not Found"
             )
         
+        today = date.today()
+        dob = patient["dob"]
+        age = (today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day)))
+
+        patient["age"] = age
+        
         return patient
     except Exception:
         raise
@@ -86,6 +94,13 @@ def search_patients_service(db, clinic_id: int, query: str, page: int, limit: in
         patients = search_patients(db, clinic_id, query, limit, offset)
         if not patients:
             return []
+        
+        today = date.today()
+
+        for patient in patients:
+            dob = patient["dob"]
+            age = (today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day)))
+            patient["age"] = age
         
         return patients
     except Exception:
@@ -127,6 +142,12 @@ def update_patient_service(db, clinic_id: int, patient_id: int, data: PatientUpd
                 status_code=400,
                 detail="Patient Update Failed"
             )
+        
+        today = date.today()
+        dob = updated_patient["dob"]
+        age = (today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day)))
+
+        updated_patient["age"] = age
 
         db.commit()
 

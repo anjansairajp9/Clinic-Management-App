@@ -1,5 +1,8 @@
 from fastapi import HTTPException
 
+from datetime import date
+from zoneinfo import ZoneInfo
+
 from backend.repositories.appointment_repository import get_appointment_by_id
 
 from backend.schemas.treatment_schema import (
@@ -8,8 +11,11 @@ from backend.schemas.treatment_schema import (
 
 from backend.repositories.treatment_repository import (
     create_treatment,
-    get_treatment_by_appointment_id
+    get_treatment_by_appointment_id,
+    get_treatment_by_id
 )
+
+IST = ZoneInfo("Asia/Kolkata")
 
 def create_treatment_service(db, clinic_id: int, data: CreateTreatment):
     try:
@@ -59,4 +65,28 @@ def create_treatment_service(db, clinic_id: int, data: CreateTreatment):
         raise
     except Exception:
         db.rollback()
+        raise
+
+
+def get_treatment_by_id_service(db, clinic_id: int, treatment_id: int):
+    try:
+        treatment = get_treatment_by_id(db, clinic_id, treatment_id)
+        if not treatment:
+            raise HTTPException(
+                status_code=404,
+                detail="Treatment Not Found"
+            )
+        
+        treatment["appointment_time"] = treatment["appointment_time"].astimezone(IST)
+
+        today = date.today()
+        dob = treatment["patient_dob"]
+        age = (today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day)))
+
+        treatment["patient_age"] = age
+
+        treatment.pop("patient_dob")
+
+        return treatment
+    except Exception:
         raise
