@@ -113,7 +113,6 @@ CREATE TABLE treatments (
     medicines_prescribed TEXT,
     procedure_notes TEXT,
     follow_up_instructions TEXT,
-    treatment_date DATE NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -227,9 +226,6 @@ ON treatments(doctor_id);
 
 CREATE INDEX idx_treatments_appointment_id
 ON treatments(appointment_id);
-
-CREATE INDEX idx_treatments_treatment_date
-ON treatments(treatment_date);
 
 
 CREATE INDEX idx_payments_appointment_id

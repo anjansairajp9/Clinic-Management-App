@@ -4,7 +4,8 @@ from backend.routes import (
     auth_route,
     patient_route,
     doctor_route,
-    appointment_route
+    appointment_route,
+    treatment_route
 )
 
 
@@ -24,3 +25,5 @@ app.include_router(patient_route.router)
 app.include_router(doctor_route.router)
 
 app.include_router(appointment_route.router)
+
+app.include_router(treatment_route.router)
