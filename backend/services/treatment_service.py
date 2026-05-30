@@ -15,7 +15,8 @@ from backend.repositories.treatment_repository import (
     get_treatment_by_appointment_id,
     get_treatment_by_id,
     search_treatments,
-    update_treatment_details
+    update_treatment_details,
+    delete_treatment
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -162,6 +163,35 @@ def update_treatment_service(db, clinic_id: int, treatment_id: int, data: Treatm
         updated_treatment.pop("patient_dob")
 
         return updated_treatment
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+
+def delete_treatment_service(db, clinic_id: int, treatment_id: int):
+    try:
+        treatment = get_treatment_by_id(db, clinic_id, treatment_id)
+        if not treatment:
+            raise HTTPException(
+                status_code=404,
+                detail="Treatment Not Found"
+            )
+        
+        deleted_treatment = delete_treatment(db, clinic_id, treatment_id)
+        if not deleted_treatment:
+            raise HTTPException(
+                status_code=400,
+                detail="Failed To Delete Treatment"
+            )
+        
+        db.commit()
+
+        return {
+            "message": "Treatment Deleted Successfully"
+        }
     except HTTPException:
         db.rollback()
         raise

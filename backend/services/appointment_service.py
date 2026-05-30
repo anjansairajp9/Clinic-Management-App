@@ -304,8 +304,8 @@ def delete_appointment_service(db, clinic_id: int, appointment_id: int):
         deleted_appointment = soft_delete_appointment(db, clinic_id, appointment_id)
         if not deleted_appointment:
             raise HTTPException(
-                status_code=404,
-                detail="Appointment Not Found"
+                status_code=400,
+                detail="Failed To Delete Appointment"
             )
         
         db.commit()

@@ -98,3 +98,7 @@ class TreatmentUpdateResponse(BaseModel):
 
     created_at: datetime
     updated_at: datetime
+
+
+class TreatmentDeleteResponse(BaseModel):
+    message: str

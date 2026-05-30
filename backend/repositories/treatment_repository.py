@@ -68,7 +68,7 @@ def get_treatment_by_appointment_id(db, clinic_id: int, appointment_id: int):
         return cursor.fetchone()
 
 
-# GET TREATMENT BY ID
+# GET TREATMENT BY ID, UPDATE TREATMENT
 def get_treatment_by_id(db, clinic_id: int, treatment_id: int):
     with db.cursor() as cursor:
         cursor.execute(
@@ -195,6 +195,7 @@ def search_treatments(db, clinic_id: int, query: str, appointment_date: date, li
         return cursor.fetchall()
 
 
+# UPDATE TREATMENT DETAILS
 def update_treatment_details(db, clinic_id: int, treatment_id: int, update_data: dict):
     fields = []
     values = []
@@ -223,4 +224,19 @@ def update_treatment_details(db, clinic_id: int, treatment_id: int, update_data:
     with db.cursor() as cursor:
         cursor.execute(query, tuple(values))
 
+        return cursor.fetchone()
+
+
+# SOFT DELETE TREATMENT
+def delete_treatment(db, clinic_id: int, treatment_id: int):
+    with db.cursor() as cursor:
+        cursor.execute("""UPDATE treatments
+                          SET is_active = FALSE,
+                              updated_at = NOW()
+                          WHERE clinic_id = %s
+                          AND id = %s
+                          AND is_active = TRUE
+                          RETURNING id
+                        """, (clinic_id, treatment_id))
+        
         return cursor.fetchone()

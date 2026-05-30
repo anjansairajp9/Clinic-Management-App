@@ -10,14 +10,16 @@ from backend.schemas.treatment_schema import (
     TreatmentDetailResponse,
     TreatmentSearchResponse,
     TreatmentUpdate,
-    TreatmentUpdateResponse
+    TreatmentUpdateResponse,
+    TreatmentDeleteResponse
 )
 
 from backend.services.treatment_service import (
     create_treatment_service,
     get_treatment_by_id_service,
     search_treatments_service,
-    update_treatment_service
+    update_treatment_service,
+    delete_treatment_service
 )
 
 router = APIRouter()
@@ -49,3 +51,8 @@ def update_treatment(
     treatment_id: int, data: TreatmentUpdate, current_clinic=Depends(get_current_clinic), db=Depends(get_db)
 ):
     return update_treatment_service(db, current_clinic["clinic_id"], treatment_id, data)
+
+
+@router.delete("/treatments/{treatment_id}", response_model=TreatmentDeleteResponse, status_code=status.HTTP_200_OK)
+def delete_treatment(treatment_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
+    return delete_treatment_service(db, current_clinic["clinic_id"], treatment_id)
