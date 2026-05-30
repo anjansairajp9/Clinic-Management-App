@@ -8,13 +8,16 @@ from backend.schemas.treatment_schema import (
     CreateTreatment,
     CreateTreatmentResponse,
     TreatmentDetailResponse,
-    TreatmentSearchResponse
+    TreatmentSearchResponse,
+    TreatmentUpdate,
+    TreatmentUpdateResponse
 )
 
 from backend.services.treatment_service import (
     create_treatment_service,
     get_treatment_by_id_service,
-    search_treatments_service
+    search_treatments_service,
+    update_treatment_service
 )
 
 router = APIRouter()
@@ -39,3 +42,10 @@ def search_treatments(
 @router.get("/treatments/{treatment_id}", response_model=TreatmentDetailResponse, status_code=status.HTTP_200_OK)
 def get_treatment_by_id(treatment_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
     return get_treatment_by_id_service(db, current_clinic["clinic_id"], treatment_id)
+
+
+@router.patch("/treatments/{treatment_id}", response_model=TreatmentUpdateResponse, status_code=status.HTTP_200_OK)
+def update_treatment(
+    treatment_id: int, data: TreatmentUpdate, current_clinic=Depends(get_current_clinic), db=Depends(get_db)
+):
+    return update_treatment_service(db, current_clinic["clinic_id"], treatment_id, data)

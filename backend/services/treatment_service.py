@@ -6,14 +6,16 @@ from zoneinfo import ZoneInfo
 from backend.repositories.appointment_repository import get_appointment_by_id
 
 from backend.schemas.treatment_schema import (
-    CreateTreatment
+    CreateTreatment,
+    TreatmentUpdate
 )
 
 from backend.repositories.treatment_repository import (
     create_treatment,
     get_treatment_by_appointment_id,
     get_treatment_by_id,
-    search_treatments
+    search_treatments,
+    update_treatment_details
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -119,4 +121,50 @@ def search_treatments_service(
 
         return treatments
     except Exception:
+        raise
+
+
+def update_treatment_service(db, clinic_id: int, treatment_id: int, data: TreatmentUpdate):
+    try:
+        existing_treatment = get_treatment_by_id(db, clinic_id, treatment_id)
+        if not existing_treatment:
+            raise HTTPException(
+                status_code=404,
+                detail="Treatment Not Found"
+            )
+        
+        update_data = data.model_dump(exclude_unset=True)
+        if not update_data:
+            raise HTTPException(
+                status_code=400,
+                detail="No Fields Provided For Update"
+            )
+        
+        updated_treatment = update_treatment_details(db, clinic_id, treatment_id, update_data)
+        if not updated_treatment:
+            raise HTTPException(
+                status_code=400,
+                detail="Failed To Update Treatment"
+            )
+        
+        db.commit()
+
+        updated_treatment = get_treatment_by_id(db, clinic_id, treatment_id)
+
+        updated_treatment["appointment_time"] = updated_treatment["appointment_time"].astimezone(IST)
+
+        today = date.today()
+        dob = updated_treatment["patient_dob"]
+        age = (today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day)))
+
+        updated_treatment["patient_age"] = age
+
+        updated_treatment.pop("patient_dob")
+
+        return updated_treatment
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
         raise

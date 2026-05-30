@@ -193,3 +193,34 @@ def search_treatments(db, clinic_id: int, query: str, appointment_date: date, li
         cursor.execute(query_sql, tuple(values))
 
         return cursor.fetchall()
+
+
+def update_treatment_details(db, clinic_id: int, treatment_id: int, update_data: dict):
+    fields = []
+    values = []
+
+    for key, value in update_data.items():
+        fields.append(f"{key} = %s")
+        values.append(value)
+
+    fields.append("updated_at = NOW()")
+
+    values.extend([clinic_id, treatment_id])
+
+    query = f"""
+        UPDATE treatments
+        SET {", ".join(fields)}
+
+        WHERE clinic_id = %s
+        AND id = %s
+        AND is_active = TRUE
+
+        RETURNING
+            id, patient_id, doctor_id, appointment_id, diagnosis, treatment_performed, medicines_prescribed, procedure_notes,
+            follow_up_instructions, created_at, updated_at
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query, tuple(values))
+
+        return cursor.fetchone()
