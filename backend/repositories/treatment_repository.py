@@ -1,3 +1,5 @@
+from datetime import date
+
 # CREATE TREATMENT
 def create_treatment(
     db, 
@@ -113,3 +115,81 @@ def get_treatment_by_id(db, clinic_id: int, treatment_id: int):
             """, (clinic_id, treatment_id))
         
         return cursor.fetchone()
+
+
+# SEARCH TREATMENTS
+def search_treatments(db, clinic_id: int, query: str, appointment_date: date, limit: int, offset: int):
+    conditions = [
+        "treatments.clinic_id = %s",
+        "treatments.is_active = TRUE"
+    ]
+
+    values = [clinic_id]
+
+    if query:
+        conditions.append(
+            """
+            (
+                patients.name ILIKE %s
+                OR patients.phone ILIKE %s
+                OR doctors.name ILIKE %s
+                OR treatments.diagnosis ILIKE %s
+            )
+            """
+        )
+
+        search_term = f"%{query}%"
+
+        values.extend([
+            search_term,
+            search_term,
+            search_term,
+            search_term
+        ])
+
+    if appointment_date:
+        conditions.append(
+            "DATE(appointments.appointment_time) = %s"
+        )
+
+        values.append(appointment_date)
+
+    values.extend([limit, offset])
+
+    query_sql = f"""
+        SELECT
+            treatments.id AS id,
+
+            patients.name AS patient_name,
+            patients.dob AS patient_dob,
+            patients.phone AS patient_phone,
+
+            doctors.name AS doctor_name,
+
+            treatments.diagnosis AS diagnosis,
+
+            appointments.appointment_time AS appointment_time
+
+        FROM treatments
+
+        JOIN patients
+            ON treatments.patient_id = patients.id
+
+        JOIN doctors
+            ON treatments.doctor_id = doctors.id
+
+        JOIN appointments
+            ON treatments.appointment_id = appointments.id
+
+        WHERE {" AND ".join(conditions)}
+
+        ORDER BY appointments.appointment_time DESC
+
+        LIMIT %s
+        OFFSET %s
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query_sql, tuple(values))
+
+        return cursor.fetchall()

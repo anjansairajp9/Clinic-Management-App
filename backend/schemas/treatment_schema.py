@@ -50,3 +50,17 @@ class TreatmentDetailResponse(BaseModel):
 
     created_at: datetime
     updated_at: datetime
+
+
+class TreatmentSearchResponse(BaseModel):
+    id: int
+
+    patient_name: str
+    patient_age: int
+    patient_phone: str
+
+    doctor_name: str
+
+    diagnosis: str
+
+    appointment_time: datetime

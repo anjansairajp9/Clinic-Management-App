@@ -12,7 +12,8 @@ from backend.schemas.treatment_schema import (
 from backend.repositories.treatment_repository import (
     create_treatment,
     get_treatment_by_appointment_id,
-    get_treatment_by_id
+    get_treatment_by_id,
+    search_treatments
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -88,5 +89,34 @@ def get_treatment_by_id_service(db, clinic_id: int, treatment_id: int):
         treatment.pop("patient_dob")
 
         return treatment
+    except Exception:
+        raise
+
+
+def search_treatments_service(
+    db, clinic_id: int, query: str | None, appointment_date: date | None, page: int, limit: int
+):
+    try:
+        if query:
+            query = query.strip()
+
+        offset = (page - 1) * limit
+
+        treatments = search_treatments(db, clinic_id, query, appointment_date, limit, offset)
+        if not treatments:
+            return []
+        
+        today = date.today()
+
+        for treatment in treatments:
+            treatment["appointment_time"] = treatment["appointment_time"].astimezone(IST)
+
+            dob = treatment["patient_dob"]
+            age = (today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day)))
+            treatment["patient_age"] = age
+
+            treatment.pop("patient_dob")
+
+        return treatments
     except Exception:
         raise
