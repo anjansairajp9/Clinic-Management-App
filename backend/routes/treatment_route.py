@@ -21,7 +21,8 @@ from backend.services.treatment_service import (
     search_treatments_service,
     update_treatment_service,
     delete_treatment_service,
-    get_patient_treatment_history_service
+    get_patient_treatment_history_service,
+    get_treatment_by_appointment_id_service
 )
 
 router = APIRouter()
@@ -74,3 +75,10 @@ def patient_treatment_history(
     db=Depends(get_db)
 ):
     return get_patient_treatment_history_service(db, current_clinic["clinic_id"], patient_id, appointment_date, page, limit)
+
+
+@router.get(
+    "/appointments/{appointment_id}/treatments", response_model=TreatmentDetailResponse, status_code=status.HTTP_200_OK
+)
+def get_treatment_by_appointment_id(appointment_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
+    return get_treatment_by_appointment_id_service(db, current_clinic["clinic_id"], appointment_id)

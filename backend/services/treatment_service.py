@@ -18,7 +18,8 @@ from backend.repositories.treatment_repository import (
     search_treatments,
     update_treatment_details,
     delete_treatment,
-    get_patient_treatment_history
+    get_patient_treatment_history,
+    get_treatment_by_appointment_id_full
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -231,5 +232,36 @@ def get_patient_treatment_history_service(
             treatment.pop("patient_dob")
 
         return treatments
+    except Exception:
+        raise
+
+
+def get_treatment_by_appointment_id_service(db, clinic_id: int, appointment_id: int):
+    try:
+        appointment = get_appointment_by_id(db, clinic_id, appointment_id)
+        if not appointment:
+            raise HTTPException(
+                status_code=404,
+                detail="Appointment Not Found"
+            )
+        
+        treatment = get_treatment_by_appointment_id_full(db, clinic_id, appointment_id)
+        if not treatment:
+            raise HTTPException(
+                status_code=404,
+                detail="Treatment Not Found For This Appointment"
+            )
+        
+        treatment["appointment_time"] = treatment["appointment_time"].astimezone(IST)
+
+        today = date.today()
+        dob = treatment["patient_dob"]
+        age = (today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day)))
+
+        treatment["patient_age"] = age
+
+        treatment.pop("patient_dob")
+
+        return treatment
     except Exception:
         raise
