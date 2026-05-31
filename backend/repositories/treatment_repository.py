@@ -240,3 +240,68 @@ def delete_treatment(db, clinic_id: int, treatment_id: int):
                         """, (clinic_id, treatment_id))
         
         return cursor.fetchone()
+
+
+# PATIENT TREATMENT HISTORY
+def get_patient_treatment_history(
+    db, clinic_id: int, patient_id: int, appointment_date: date | None, limit: int, offset: int
+):
+    conditions = [
+        "treatments.clinic_id = %s",
+        "treatments.patient_id = %s",
+        "treatments.is_active = TRUE"
+    ]
+
+    values = [clinic_id, patient_id]
+
+    if appointment_date:
+        conditions.append(
+            "DATE(appointments.appointment_time) = %s"
+        )
+
+        values.append(appointment_date)
+
+    values.extend([limit, offset])
+    
+    query = f""" 
+        SELECT
+            treatments.id AS id,
+
+            patients.name AS patient_name,
+            patients.dob AS patient_dob,
+
+            doctors.name AS doctor_name,
+            doctors.specialization AS doctor_specialization,
+
+            treatments.diagnosis AS diagnosis,
+            treatments.treatment_performed AS treatment_performed,
+            treatments.medicines_prescribed AS medicines_prescribed,
+
+            appointments.appointment_time AS appointment_time,
+
+            treatments.created_at AS created_at,
+            treatments.updated_at AS updated_at
+
+        FROM treatments
+
+        JOIN patients
+            ON treatments.patient_id = patients.id
+
+        JOIN doctors
+            ON treatments.doctor_id = doctors.id
+
+        JOIN appointments
+            ON treatments.appointment_id = appointments.id
+
+        WHERE {" AND ".join(conditions)}
+
+        ORDER BY appointments.appointment_time DESC
+
+        LIMIT %s
+        OFFSET %s
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query, tuple(values))
+
+        return cursor.fetchall()

@@ -102,3 +102,22 @@ class TreatmentUpdateResponse(BaseModel):
 
 class TreatmentDeleteResponse(BaseModel):
     message: str
+
+
+class PatientTreatmentHistoryResponse(BaseModel):
+    id: int
+
+    patient_name: str
+    patient_age: int
+
+    doctor_name: str
+    doctor_specialization: str
+
+    diagnosis: str
+    treatment_performed: str
+    medicines_prescribed: str | None = None
+
+    appointment_time: datetime
+
+    created_at: datetime
+    updated_at: datetime
