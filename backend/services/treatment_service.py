@@ -25,7 +25,9 @@ from backend.repositories.treatment_repository import (
     get_patient_treatment_history,
     get_treatment_by_appointment_id_full,
     create_treatment_file,
-    get_treatment_files
+    get_treatment_files,
+    get_treatment_file_by_id,
+    delete_treatment_file
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -417,4 +419,40 @@ def get_treatment_files_service(db, clinic_id: int, treatment_id: int):
         
         return files
     except Exception:
+        raise
+
+
+def delete_treatment_file_service(db, clinic_id: int, file_id: int):
+    try:
+        treatment_file = get_treatment_file_by_id(db, clinic_id, file_id)
+        if not treatment_file:
+            raise HTTPException(
+                status_code=404,
+                detail="Treatment File Not Found"
+            )
+
+        relative_path = treatment_file["file_url"].lstrip("/")
+
+        file_path = Path("backend") / relative_path
+        
+        if file_path.exists():
+            file_path.unlink()
+
+        deleted_file = delete_treatment_file(db, clinic_id, file_id)
+        if not deleted_file:
+            raise HTTPException(
+                status_code=400,
+                detail="Failed To Delete Treatment File"
+            )
+
+        db.commit()
+
+        return {
+            "message": "Treatment File Deleted Successfully"
+        }
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
         raise

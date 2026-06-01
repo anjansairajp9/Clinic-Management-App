@@ -388,3 +388,33 @@ def get_treatment_files(db, clinic_id: int, treatment_id: int):
             """, (clinic_id, treatment_id))
         
         return cursor.fetchall()
+
+
+# GET TREATMENT FILE BY ID, DELETE TREATMENT FILE
+def get_treatment_file_by_id(db, clinic_id: int, file_id: int):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """SELECT
+                    id, treatment_id, file_url
+                FROM treatment_files
+                WHERE clinic_id = %s
+                AND id = %s
+                AND is_active = TRUE
+            """, (clinic_id, file_id))
+        
+        return cursor.fetchone()
+
+
+# DELETE TREATMENT FILE
+def delete_treatment_file(db, clinic_id: int, file_id: int):
+    with db.cursor() as cursor:
+        cursor.execute("""UPDATE treatment_files
+                          SET is_active = FALSE,
+                              updated_at = NOW()
+                          WHERE clinic_id = %s
+                          AND id = %s
+                          AND is_active = TRUE
+                          RETURNING id
+                        """, (clinic_id, file_id))
+        
+        return cursor.fetchone()
