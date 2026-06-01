@@ -135,6 +135,29 @@ CREATE TABLE treatments (
 );
 
 
+CREATE TABLE treatment_files (
+    id SERIAL PRIMARY KEY,
+    clinic_id INTEGER NOT NULL,
+    treatment_id INTEGER NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    original_file_name VARCHAR(255) NOT NULL,
+    file_url TEXT NOT NULL,
+    file_type VARCHAR(100) NOT NULL,
+    file_size INTEGER NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_treatment_file_clinic
+        FOREIGN KEY (clinic_id)
+        REFERENCES clinics(id),
+
+    CONSTRAINT fk_treatment_file_treatment
+        FOREIGN KEY (treatment_id)
+        REFERENCES treatments(id)
+);
+
+
 CREATE TABLE payments (
 	id SERIAL PRIMARY KEY,
 	appointment_id INTEGER NOT NULL,
@@ -228,6 +251,13 @@ CREATE INDEX idx_treatments_appointment_id
 ON treatments(appointment_id);
 
 
+CREATE INDEX idx_treatment_files_treatment_id
+ON treatment_files(treatment_id);
+
+CREATE INDEX idx_treatment_files_clinic_id
+ON treatment_files(clinic_id);
+
+
 CREATE INDEX idx_payments_appointment_id
 ON payments(appointment_id);
 
@@ -251,6 +281,8 @@ SELECT * FROM doctors;
 SELECT * FROM appointments;
 
 SELECT * FROM treatments;
+
+SELECT * FROM treatment_files;
 
 SELECT * FROM payments;
 
