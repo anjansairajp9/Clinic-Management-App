@@ -121,3 +121,13 @@ class PatientTreatmentHistoryResponse(BaseModel):
 
     created_at: datetime
     updated_at: datetime
+
+
+class TreatmentFileResponse(BaseModel):
+    id: int
+    treatment_id: int
+    original_file_name: str
+    file_type: str
+    file_size: int
+    file_url: str
+    created_at: datetime

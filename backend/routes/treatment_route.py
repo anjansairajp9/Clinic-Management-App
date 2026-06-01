@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, status, Query, UploadFile, File
+from typing import Annotated
 from datetime import date
 
 from backend.database.db import get_db
@@ -12,7 +13,8 @@ from backend.schemas.treatment_schema import (
     TreatmentUpdate,
     TreatmentUpdateResponse,
     TreatmentDeleteResponse,
-    PatientTreatmentHistoryResponse
+    PatientTreatmentHistoryResponse,
+    TreatmentFileResponse
 )
 
 from backend.services.treatment_service import (
@@ -22,7 +24,8 @@ from backend.services.treatment_service import (
     update_treatment_service,
     delete_treatment_service,
     get_patient_treatment_history_service,
-    get_treatment_by_appointment_id_service
+    get_treatment_by_appointment_id_service,
+    upload_treatment_files_service
 )
 
 router = APIRouter()
@@ -82,3 +85,17 @@ def patient_treatment_history(
 )
 def get_treatment_by_appointment_id(appointment_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
     return get_treatment_by_appointment_id_service(db, current_clinic["clinic_id"], appointment_id)
+
+
+@router.post(
+    "/treatments/{treatment_id}/files",
+    response_model=list[TreatmentFileResponse],
+    status_code=status.HTTP_201_CREATED
+)
+def upload_treatment_files(
+    treatment_id: int, 
+    files: Annotated[list[UploadFile], File(..., description="Upload Treatment File")], 
+    current_clinic=Depends(get_current_clinic),
+    db=Depends(get_db)
+):
+    return upload_treatment_files_service(db, current_clinic["clinic_id"], treatment_id, files)

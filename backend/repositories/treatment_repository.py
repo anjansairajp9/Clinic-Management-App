@@ -354,3 +354,21 @@ def get_treatment_by_appointment_id_full(db, clinic_id: int, appointment_id: int
             """, (clinic_id, appointment_id))
         
         return cursor.fetchone()
+
+
+# --- FILE MODULE --- #
+
+# CREATE TREATMENT FILE
+def create_treatment_file(
+    db, clinic_id: int, treatment_id: int, file_name: str, original_file_name: str, file_url: str, file_type: str, file_size: int
+):
+    with db.cursor() as cursor:
+        cursor.execute("""INSERT INTO 
+                            treatment_files (clinic_id, treatment_id, file_name, original_file_name, file_url, file_type, file_size)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)
+
+                            RETURNING 
+                                id, treatment_id, original_file_name, file_type, file_size, file_url, created_at
+                       """, (clinic_id, treatment_id, file_name, original_file_name, file_url, file_type, file_size))
+        
+        return cursor.fetchone()
