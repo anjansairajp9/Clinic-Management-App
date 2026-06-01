@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from backend.routes import (
     auth_route,
@@ -16,6 +17,9 @@ def health_check():
     return {
         "message": "Clinic Management System API Running"
     }
+
+
+app.mount("/uploads", StaticFiles(directory="backend/uploads"), name="uploads")
 
 
 app.include_router(auth_route.router)

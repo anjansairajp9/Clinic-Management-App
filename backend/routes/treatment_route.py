@@ -25,7 +25,8 @@ from backend.services.treatment_service import (
     delete_treatment_service,
     get_patient_treatment_history_service,
     get_treatment_by_appointment_id_service,
-    upload_treatment_files_service
+    upload_treatment_files_service,
+    get_treatment_files_service
 )
 
 router = APIRouter()
@@ -99,3 +100,12 @@ def upload_treatment_files(
     db=Depends(get_db)
 ):
     return upload_treatment_files_service(db, current_clinic["clinic_id"], treatment_id, files)
+
+
+@router.get(
+    "/treatments/{treatment_id}/files",
+    response_model=list[TreatmentFileResponse],
+    status_code=status.HTTP_200_OK
+)
+def get_treatment_files(treatment_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
+    return get_treatment_files_service(db, current_clinic["clinic_id"], treatment_id)

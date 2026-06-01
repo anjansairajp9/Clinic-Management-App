@@ -372,3 +372,19 @@ def create_treatment_file(
                        """, (clinic_id, treatment_id, file_name, original_file_name, file_url, file_type, file_size))
         
         return cursor.fetchone()
+
+
+# GET TREATMENT FILES
+def get_treatment_files(db, clinic_id: int, treatment_id: int):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """SELECT
+                    id, treatment_id, original_file_name, file_type, file_size, file_url, created_at
+                FROM treatment_files
+                WHERE clinic_id = %s
+                AND treatment_id = %s
+                AND is_active = TRUE
+                ORDER BY created_at DESC
+            """, (clinic_id, treatment_id))
+        
+        return cursor.fetchall()

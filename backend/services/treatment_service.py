@@ -24,7 +24,8 @@ from backend.repositories.treatment_repository import (
     delete_treatment,
     get_patient_treatment_history,
     get_treatment_by_appointment_id_full,
-    create_treatment_file
+    create_treatment_file,
+    get_treatment_files
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -398,4 +399,22 @@ def upload_treatment_files_service(db, clinic_id: int, treatment_id: int, files:
             if path.exists():
                 path.unlink()
 
+        raise
+
+
+def get_treatment_files_service(db, clinic_id: int, treatment_id: int):
+    try:
+        treatment = get_treatment_by_id(db, clinic_id, treatment_id)
+        if not treatment:
+            raise HTTPException(
+                status_code=404,
+                detail="Treatment Not Found"
+            )
+        
+        files = get_treatment_files(db, clinic_id, treatment_id)
+        if not files:
+            return []
+        
+        return files
+    except Exception:
         raise
