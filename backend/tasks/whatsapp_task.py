@@ -2,22 +2,10 @@ from backend.core.celery_app import celery
 import asyncio
 
 from backend.services.whatsapp_service import (
-    send_password_reset_message,
     send_appointment_confirmation_message,
     send_appointment_reminder_message,
     send_appointment_cancelled_message
 )
-
-@celery.task(
-    autoretry_for=(Exception,),
-    retry_kwargs={"max_retries": 3},
-    retry_backoff=True
-)
-def send_password_reset_task(phone: str, clinic_name: str, reset_link: str):
-    return asyncio.run(
-        send_password_reset_message(phone, clinic_name, reset_link)
-    )
-
 
 @celery.task(
     autoretry_for=(Exception,),

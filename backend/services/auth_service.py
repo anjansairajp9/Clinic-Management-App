@@ -14,7 +14,7 @@ from backend.core.security import (
 from backend.core.utils import format_phn_number
 from backend.core.config import FRONTEND_URL
 
-from backend.tasks.whatsapp_task import send_password_reset_task
+from backend.tasks.email_task import send_password_reset_email_task
 
 from backend.schemas.auth_schema import (
     RegisterClinic,
@@ -170,9 +170,8 @@ def forgot_password_service(db, data: ForgotPassword):
                 f"?token={reset_token}"
             )
 
-            send_password_reset_task.delay(
-                phone=clinic["phone"],
-                clinic_name=clinic["name"],
+            send_password_reset_email_task.delay(
+                email=clinic["email"],
                 reset_link=reset_link
             )
         except Exception as e:
