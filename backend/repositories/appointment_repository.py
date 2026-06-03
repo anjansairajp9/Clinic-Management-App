@@ -697,7 +697,8 @@ def get_appointment_whatsapp_details(db, clinic_id: int, appointment_id: int):
 
                     doctors.name AS doctor_name,
 
-                    clinics.name AS clinic_name
+                    clinics.name AS clinic_name,
+                    clinics.phone AS clinic_phone
 
                 FROM appointments
 
@@ -732,7 +733,8 @@ def get_appointments_for_reminder(db):
 
                     doctors.name AS doctor_name,
 
-                    clinics.name AS clinic_name
+                    clinics.name AS clinic_name,
+                    clinics.phone AS clinic_phone
 
                 FROM appointments
 

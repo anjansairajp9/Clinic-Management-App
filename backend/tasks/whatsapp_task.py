@@ -13,10 +13,10 @@ from backend.services.whatsapp_service import (
     retry_backoff=True
 )
 def send_appointment_confirmation_task(
-    phone: str, clinic_name: str, patient_name: str, doctor_name: str, appointment_time: str | None
+    phone: str, clinic_name: str, patient_name: str, appointment_time: str | None, clinic_phone: str
 ):
     return asyncio.run(
-        send_appointment_confirmation_message(phone, clinic_name, patient_name, doctor_name, appointment_time)
+        send_appointment_confirmation_message(phone, clinic_name, patient_name, appointment_time, clinic_phone)
     )
 
 
@@ -26,10 +26,10 @@ def send_appointment_confirmation_task(
     retry_backoff=True
 )
 def send_appointment_reminder_task(
-    phone: str, clinic_name: str, patient_name: str, doctor_name: str, appointment_time: str | None
+    phone: str, clinic_name: str, patient_name: str, appointment_time: str | None, clinic_phone: str
 ):
     return asyncio.run(
-        send_appointment_reminder_message(phone, clinic_name, patient_name, doctor_name, appointment_time)
+        send_appointment_reminder_message(phone, clinic_name, patient_name, appointment_time, clinic_phone)
     )
 
 
@@ -38,7 +38,7 @@ def send_appointment_reminder_task(
     retry_kwargs={"max_retries": 3},
     retry_backoff=True
 )
-def send_appointment_cancelled_task(phone: str, clinic_name: str, patient_name: str, appointment_time: str | None):
+def send_appointment_cancelled_task(phone: str, clinic_name: str, patient_name: str, appointment_time: str | None, clinic_phone: str):
     return asyncio.run(
-        send_appointment_cancelled_message(phone, clinic_name, patient_name, appointment_time)
+        send_appointment_cancelled_message(phone, clinic_name, patient_name, appointment_time, clinic_phone)
     )

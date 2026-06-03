@@ -114,8 +114,8 @@ def create_appointment_service(db, clinic_id: int, data: CreateAppointment):
                     phone=whatsapp_details["patient_phone"],
                     clinic_name=whatsapp_details["clinic_name"],
                     patient_name=whatsapp_details["patient_name"],
-                    doctor_name=whatsapp_details["doctor_name"],
-                    appointment_time=whatsapp_details["appointment_time"].isoformat()
+                    appointment_time=whatsapp_details["appointment_time"].isoformat(),
+                    clinic_phone=whatsapp_details["clinic_phone"]
                 )
         except Exception as e:
             print(f"Failed to Queue Appointment Confirmation: {str(e)}")
@@ -444,7 +444,8 @@ def update_appointment_status_service(db, clinic_id: int, appointment_id: int, d
                         phone=whatsapp_details["patient_phone"],
                         clinic_name=whatsapp_details["clinic_name"],
                         patient_name=whatsapp_details["patient_name"],
-                        appointment_time=whatsapp_details["appointment_time"].isoformat()
+                        appointment_time=whatsapp_details["appointment_time"].isoformat(),
+                        clinic_phone=whatsapp_details["clinic_phone"]
                     )
         except Exception as e:
             print(f"Failed To Queue Cancellation: {str(e)}")
@@ -646,8 +647,8 @@ def process_appointment_reminders_service(db):
                     phone=appointment["patient_phone"],
                     clinic_name=appointment["clinic_name"],
                     patient_name=appointment["patient_name"],
-                    doctor_name=appointment["doctor_name"],
-                    appointment_time=appointment["appointment_time"].isoformat()
+                    appointment_time=appointment["appointment_time"].isoformat(),
+                    clinic_phone=appointment["clinic_phone"]
                 )
 
                 mark_reminder_sent(db, appointment["id"])
