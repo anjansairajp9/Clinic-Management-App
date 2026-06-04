@@ -1,5 +1,7 @@
 from fastapi import HTTPException
 
+from zoneinfo import ZoneInfo
+
 from backend.repositories.appointment_repository import get_appointment_by_id
 
 from backend.schemas.payment_schema import (
@@ -9,8 +11,11 @@ from backend.schemas.payment_schema import (
 
 from backend.repositories.payment_repository import (
     create_payment,
-    get_payment_by_appointment_id_to_validate_create_payment
+    get_payment_by_appointment_id_to_validate_create_payment,
+    get_payment_by_id
 )
+
+IST = ZoneInfo("Asia/Kolkata")
 
 def create_payment_service(db, clinic_id: int, data: CreatePayment):
     try:
@@ -58,4 +63,20 @@ def create_payment_service(db, clinic_id: int, data: CreatePayment):
         raise
     except Exception:
         db.rollback()
+        raise
+
+
+def get_payment_by_id_service(db, clinic_id: int, payment_id: int):
+    try:
+        payment = get_payment_by_id(db, clinic_id, payment_id)
+        if not payment:
+            raise HTTPException(
+                status_code=404,
+                detail="Payment Not Found"
+            )
+        
+        payment["appointment_time"] = payment["appointment_time"].astimezone(IST)
+
+        return payment
+    except Exception:
         raise
