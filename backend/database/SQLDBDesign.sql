@@ -159,16 +159,20 @@ CREATE TABLE treatment_files (
 
 
 CREATE TABLE payments (
-	id SERIAL PRIMARY KEY,
-	appointment_id INTEGER NOT NULL,
-	amount NUMERIC(10, 2) NOT NULL CHECK (amount >= 0),
-	payment_method VARCHAR(100),
-	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    id SERIAL PRIMARY KEY,
+    appointment_id INTEGER NOT NULL UNIQUE,
+    total_amount NUMERIC(10,2) CHECK (total_amount >= 0),
+    amount_paid NUMERIC(10,2) DEFAULT 0 CHECK (amount_paid >= 0),
+    payment_method VARCHAR(50) CHECK (payment_method IN ('cash', 'upi', 'card', 'bank_transfer')),
+    payment_status VARCHAR(50) DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid')),
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
-	CONSTRAINT fk_payments_appointment
-		FOREIGN KEY(appointment_id)
-		REFERENCES appointments(id)
-		ON DELETE CASCADE
+    CONSTRAINT fk_payments_appointment
+        FOREIGN KEY (appointment_id)
+        REFERENCES appointments(id)
+        ON DELETE CASCADE
 );
 
 
@@ -258,8 +262,8 @@ CREATE INDEX idx_treatment_files_clinic_id
 ON treatment_files(clinic_id);
 
 
-CREATE INDEX idx_payments_appointment_id
-ON payments(appointment_id);
+CREATE INDEX idx_payments_payment_status
+ON payments(payment_status);
 
 
 CREATE INDEX idx_refresh_tokens_clinic_id
