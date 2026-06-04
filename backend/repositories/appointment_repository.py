@@ -484,18 +484,21 @@ def get_appointment_analytics(db, clinic_id: int, appointment_date: date):
                     ) AS pending_appointments,
 
                     COALESCE(
-                        SUM(total_amount)
+                        SUM(payments.amount_paid)
                         FILTER (
-                            WHERE status = 'completed'
+                            WHERE payments.is_active = TRUE
                         ),
                         0
                     ) AS total_revenue
 
                 FROM appointments
 
-                WHERE clinic_id = %s
-                AND is_active = TRUE
-                AND DATE(appointment_time) = %s
+                LEFT JOIN payments
+                    ON payments.appointment_id = appointments.id
+
+                WHERE appointments.clinic_id = %s
+                AND appointments.is_active = TRUE
+                AND DATE(appointments.appointment_time) = %s
             """,(clinic_id, appointment_date))
         
         return cursor.fetchone()

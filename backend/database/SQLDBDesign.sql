@@ -166,6 +166,7 @@ CREATE TABLE payments (
     payment_method VARCHAR(50) CHECK (payment_method IN ('cash', 'upi', 'card', 'bank_transfer')),
     payment_status VARCHAR(50) DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid')),
     notes TEXT,
+	is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
