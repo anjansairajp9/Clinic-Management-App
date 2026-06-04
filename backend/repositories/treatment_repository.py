@@ -58,7 +58,7 @@ def create_treatment(
 def get_treatment_by_appointment_id(db, clinic_id: int, appointment_id: int):
     with db.cursor() as cursor:
         cursor.execute(
-             """SELECT *
+             """SELECT id
                 FROM treatments
                 WHERE clinic_id = %s
                 AND appointment_id = %s

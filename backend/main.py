@@ -6,7 +6,8 @@ from backend.routes import (
     patient_route,
     doctor_route,
     appointment_route,
-    treatment_route
+    treatment_route,
+    payment_route
 )
 
 
@@ -31,3 +32,5 @@ app.include_router(doctor_route.router)
 app.include_router(appointment_route.router)
 
 app.include_router(treatment_route.router)
+
+app.include_router(payment_route.router)

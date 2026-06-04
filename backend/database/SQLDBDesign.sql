@@ -160,6 +160,7 @@ CREATE TABLE treatment_files (
 
 CREATE TABLE payments (
     id SERIAL PRIMARY KEY,
+	clinic_id INTEGER NOT NULL,
     appointment_id INTEGER NOT NULL UNIQUE,
     total_amount NUMERIC(10,2) CHECK (total_amount >= 0),
     amount_paid NUMERIC(10,2) DEFAULT 0 CHECK (amount_paid >= 0),
@@ -262,6 +263,9 @@ ON treatment_files(treatment_id);
 CREATE INDEX idx_treatment_files_clinic_id
 ON treatment_files(clinic_id);
 
+
+CREATE INDEX idx_payments_clinic_id
+ON payments(clinic_id);
 
 CREATE INDEX idx_payments_payment_status
 ON payments(payment_status);
