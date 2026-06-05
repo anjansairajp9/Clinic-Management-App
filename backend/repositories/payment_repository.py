@@ -37,7 +37,7 @@ def get_payment_by_appointment_id_to_validate_create_payment(db, clinic_id: int,
         return cursor.fetchone()
 
 
-# GET PAYMENT BY ID
+# GET PAYMENT BY ID, UPDATE PAYMENT
 def get_payment_by_id(db, clinic_id: int, payment_id: int):
     with db.cursor() as cursor:
         cursor.execute(
@@ -282,4 +282,19 @@ def update_payment_details(db, clinic_id: int, payment_id: int, update_data: dic
     with db.cursor() as cursor:
         cursor.execute(query, tuple(values))
 
+        return cursor.fetchone()
+
+
+# SOFT DELETE PAYMENT
+def soft_delete_payment(db, clinic_id: int, payment_id: int):
+    with db.cursor() as cursor:
+        cursor.execute("""UPDATE payments
+                          SET is_active = FALSE,
+                              updated_at = NOW()
+                          WHERE clinic_id = %s
+                          AND id = %s
+                          AND is_active = TRUE
+                          RETURNING id
+                       """, (clinic_id, payment_id))
+        
         return cursor.fetchone()

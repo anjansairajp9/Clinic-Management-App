@@ -17,7 +17,8 @@ from backend.repositories.payment_repository import (
     get_payment_by_id,
     get_payment_by_appointment_id,
     search_payments,
-    update_payment_details
+    update_payment_details,
+    soft_delete_payment
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -178,6 +179,35 @@ def update_payment_service(db, clinic_id: int, payment_id: int, data: PaymentUpd
         db.commit()
 
         return updated_payment
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+
+def delete_payment_service(db, clinic_id: int, payment_id: int):
+    try:
+        payment = get_payment_by_id(db, clinic_id, payment_id)
+        if not payment:
+            raise HTTPException(
+                status_code=404,
+                detail="Payment Not Found"
+            )
+        
+        deleted_payment = soft_delete_payment(db, clinic_id, payment_id)
+        if not deleted_payment:
+            raise HTTPException(
+                status_code=400,
+                detail="Failed To Delete Payment"
+            )
+        
+        db.commit()
+
+        return {
+            "message": "Payment Deleted Successfully"
+        }
     except HTTPException:
         db.rollback()
         raise

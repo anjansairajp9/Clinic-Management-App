@@ -12,7 +12,8 @@ from backend.schemas.payment_schema import (
     PaymentSearchResponse,
     PaymentStatusEnum,
     PaymentUpdate,
-    PaymentUpdateResponse
+    PaymentUpdateResponse,
+    PaymentDeleteResponse
 )
 
 from backend.services.payment_service import (
@@ -20,7 +21,8 @@ from backend.services.payment_service import (
     get_payment_by_id_service,
     get_payment_by_appointment_id_service,
     search_payments_service,
-    update_payment_service
+    update_payment_service,
+    delete_payment_service
 )
 
 
@@ -59,3 +61,8 @@ def get_payment_by_appointment_id(appointment_id: int, current_clinic=Depends(ge
 @router.patch("/payments/{payment_id}", response_model=PaymentUpdateResponse, status_code=status.HTTP_200_OK)
 def update_payment(payment_id: int, data: PaymentUpdate, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
     return update_payment_service(db, current_clinic["clinic_id"], payment_id, data)
+
+
+@router.delete("/payments/{payment_id}", response_model=PaymentDeleteResponse, status_code=status.HTTP_200_OK)
+def delete_payment(payment_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
+    return delete_payment_service(db, current_clinic["clinic_id"], payment_id)
