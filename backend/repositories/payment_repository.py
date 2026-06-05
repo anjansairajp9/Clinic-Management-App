@@ -252,3 +252,34 @@ def search_payments(
         cursor.execute(query_sql, tuple(values))
 
         return cursor.fetchall()
+
+
+# UPDATE PAYMENT DETAILS
+def update_payment_details(db, clinic_id: int, payment_id: int, update_data: dict):
+    fields = []
+    values = []
+
+    for key, value in update_data.items():
+        fields.append(f"{key} = %s")
+        values.append(value)
+
+    fields.append("updated_at = NOW()")
+
+    values.extend([clinic_id, payment_id])
+
+    query = f"""
+        UPDATE payments
+        SET {", ".join(fields)}
+
+        WHERE clinic_id = %s
+        AND id = %s
+        AND is_active = TRUE
+
+        RETURNING
+            id, appointment_id, total_amount, amount_paid, payment_method, payment_status, notes, created_at, updated_at
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query, tuple(values))
+
+        return cursor.fetchone()

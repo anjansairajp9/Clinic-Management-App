@@ -7,7 +7,8 @@ from backend.repositories.appointment_repository import get_appointment_by_id
 
 from backend.schemas.payment_schema import (
     CreatePayment,
-    PaymentStatusEnum
+    PaymentStatusEnum,
+    PaymentUpdate
 )
 
 from backend.repositories.payment_repository import (
@@ -15,7 +16,8 @@ from backend.repositories.payment_repository import (
     get_payment_by_appointment_id_to_validate_create_payment,
     get_payment_by_id,
     get_payment_by_appointment_id,
-    search_payments
+    search_payments,
+    update_payment_details
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -132,4 +134,53 @@ def search_payments_service(
 
         return payments
     except Exception:
+        raise
+
+
+def update_payment_service(db, clinic_id: int, payment_id: int, data: PaymentUpdate):
+    try:
+        payment = get_payment_by_id(db, clinic_id, payment_id)
+        if not payment:
+            raise HTTPException(
+                status_code=404,
+                detail="Payment Not Found"
+            )
+        
+        update_data = data.model_dump(exclude_unset=True)
+        if not update_data:
+            raise HTTPException(
+                status_code=400,
+                detail="No Fields Provided For Update"
+            )
+        
+        new_total_amount = update_data.get("total_amount", payment["total_amount"])
+        new_amount_paid = update_data.get("amount_paid", payment["amount_paid"])
+
+        if new_amount_paid > new_total_amount:
+            raise HTTPException(
+                status_code=400,
+                detail="Amount Paid Cannot Be Greater Than Total Amount"
+            )
+        
+        if "payment_status" not in update_data:
+            if new_amount_paid >= new_total_amount:
+                update_data["payment_status"] = PaymentStatusEnum.paid.value
+            else:
+                update_data["payment_status"] = PaymentStatusEnum.pending.value
+
+        updated_payment = update_payment_details(db, clinic_id, payment_id, update_data)
+        if not updated_payment:
+            raise HTTPException(
+                status_code=400,
+                detail="Failed To Update Payment"
+            )
+        
+        db.commit()
+
+        return updated_payment
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
         raise

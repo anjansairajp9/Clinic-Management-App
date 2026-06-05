@@ -84,3 +84,22 @@ class PaymentSearchResponse(BaseModel):
     amount_paid: Decimal
     payment_method: PaymentMethodEnum | None
     payment_status: PaymentStatusEnum | None
+
+
+class PaymentUpdate(BaseModel):
+    total_amount: Decimal | None = Field(default=None, ge=0)
+    amount_paid: Decimal | None = Field(default=None, ge=0)
+    payment_method: PaymentMethodEnum | None = None
+    payment_status: PaymentStatusEnum | None = None
+    notes: str | None = None
+
+class PaymentUpdateResponse(BaseModel):
+    id: int
+    appointment_id: int
+    total_amount: Decimal
+    amount_paid: Decimal
+    payment_method: PaymentMethodEnum | None
+    payment_status: PaymentStatusEnum | None
+    notes: str | None = None
+    created_at: datetime
+    updated_at: datetime
