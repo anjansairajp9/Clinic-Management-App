@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import date
 
 # CREATE PAYMENT
 def create_payment(
@@ -146,3 +147,108 @@ def get_payment_by_appointment_id(db, clinic_id: int, appointment_id: int):
             """, (clinic_id, appointment_id))
         
         return cursor.fetchone()
+
+
+# SEARCH PAYMENTS
+def search_payments(
+    db, 
+    clinic_id: int, 
+    query: str | None, 
+    payment_status: str | None, 
+    appointment_date: date | None, 
+    limit: int, 
+    offset: int
+):
+    conditions = [
+        "payments.clinic_id = %s",
+        "payments.is_active = TRUE",
+        "appointments.is_active = TRUE"
+    ]
+
+    values = [clinic_id]
+
+    if query:
+        conditions.append(
+            """
+            (
+                patients.name ILIKE %s
+                OR patients.phone ILIKE %s
+                OR doctors.name ILIKE %s
+            )
+            """
+        )
+
+        search_term = f"%{query}%"
+
+        values.extend([
+            search_term,
+            search_term,
+            search_term
+        ])
+
+    if payment_status:
+        conditions.append(
+            "payments.payment_status = %s"
+        )
+
+        values.append(payment_status)
+
+    if appointment_date:
+        conditions.append(
+            "DATE(appointments.appointment_time) = %s"
+        )
+
+        values.append(appointment_date)
+
+    values.extend([limit, offset])
+
+    query_sql = f"""
+        SELECT
+            payments.id AS id,
+
+            patients.id AS patient_id,
+            patients.name AS patient_name,
+            patients.phone AS patient_phone,
+
+            doctors.id AS doctor_id,
+            doctors.name AS doctor_name,
+
+            appointments.id AS appointment_id,
+            appointments.appointment_time AS appointment_time,
+            appointments.status AS appointment_status,
+
+            treatments.id AS treatment_id,
+            treatments.diagnosis AS treatment_diagnosis,
+
+            payments.total_amount AS total_amount,
+            payments.amount_paid AS amount_paid,
+            payments.payment_method AS payment_method,
+            payments.payment_status AS payment_status
+
+        FROM payments
+
+        JOIN appointments
+            ON payments.appointment_id = appointments.id
+
+        JOIN patients
+            ON appointments.patient_id = patients.id
+
+        JOIN doctors
+            ON appointments.doctor_id = doctors.id
+
+        LEFT JOIN treatments    
+            ON treatments.appointment_id = appointments.id
+            AND treatments.is_active = TRUE
+
+        WHERE {" AND ".join(conditions)}
+
+        ORDER BY appointments.appointment_time DESC
+
+        LIMIT %s
+        OFFSET %s
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query_sql, tuple(values))
+
+        return cursor.fetchall()

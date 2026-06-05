@@ -151,10 +151,12 @@ def search_appointments(
         SELECT
             appointments.id AS id,
 
+            patients.id AS patient_id,
             patients.name AS patient_name,
             patients.dob AS patient_dob,
             patients.phone AS patient_phone,
 
+            doctors.id AS doctor_id,
             doctors.name AS doctor_name,
             doctors.phone AS doctor_phone,
 

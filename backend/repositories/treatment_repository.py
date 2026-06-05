@@ -160,14 +160,17 @@ def search_treatments(db, clinic_id: int, query: str, appointment_date: date, li
         SELECT
             treatments.id AS id,
 
+            patients.id AS patient_id,
             patients.name AS patient_name,
             patients.dob AS patient_dob,
             patients.phone AS patient_phone,
 
+            doctors.id AS doctor_id,
             doctors.name AS doctor_name,
 
             treatments.diagnosis AS diagnosis,
 
+            appointments.id AS appointment_id,
             appointments.appointment_time AS appointment_time
 
         FROM treatments

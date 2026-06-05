@@ -61,3 +61,26 @@ class PaymentDetailResponse(BaseModel):
     notes: str | None
     created_at: datetime
     updated_at: datetime
+
+
+class PaymentSearchResponse(BaseModel):
+    id: int
+
+    patient_id: int
+    patient_name: str
+    patient_phone: str
+
+    doctor_id: int
+    doctor_name: str
+
+    appointment_id: int
+    appointment_time: datetime
+    appointment_status: AppointmentStatusEnum
+    
+    treatment_id: int | None
+    treatment_diagnosis: str | None
+
+    total_amount: Decimal
+    amount_paid: Decimal
+    payment_method: PaymentMethodEnum | None
+    payment_status: PaymentStatusEnum | None

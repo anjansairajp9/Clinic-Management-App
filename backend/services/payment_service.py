@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 
+from datetime import date
 from zoneinfo import ZoneInfo
 
 from backend.repositories.appointment_repository import get_appointment_by_id
@@ -13,7 +14,8 @@ from backend.repositories.payment_repository import (
     create_payment,
     get_payment_by_appointment_id_to_validate_create_payment,
     get_payment_by_id,
-    get_payment_by_appointment_id
+    get_payment_by_appointment_id,
+    search_payments
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -102,5 +104,32 @@ def get_payment_by_appointment_id_service(db, clinic_id: int, appointment_id: in
         payment["appointment_time"] = payment["appointment_time"].astimezone(IST)
 
         return payment
+    except Exception:
+        raise
+
+
+def search_payments_service(
+    db, 
+    clinic_id: int,
+    query: str | None,
+    payment_status: str | None,
+    appointment_date: date | None,
+    page: int,
+    limit: int
+):
+    try:
+        if query:
+            query = query.strip()
+
+        offset = (page - 1) * limit
+
+        payments = search_payments(db, clinic_id, query, payment_status, appointment_date, limit, offset)
+        if not payments:
+            return []
+        
+        for payment in payments:
+            payment["appointment_time"] = payment["appointment_time"].astimezone(IST)
+
+        return payments
     except Exception:
         raise

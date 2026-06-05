@@ -55,14 +55,17 @@ class TreatmentDetailResponse(BaseModel):
 class TreatmentSearchResponse(BaseModel):
     id: int
 
+    patient_id: int
     patient_name: str
     patient_age: int
     patient_phone: str
 
+    doctor_id: int
     doctor_name: str
 
     diagnosis: str
 
+    appointment_id: int
     appointment_time: datetime
 
 

@@ -63,10 +63,12 @@ class AppointmentDetailResponse(BaseModel):
 class AppointmentSearchResponse(BaseModel):
     id: int
 
+    patient_id: int
     patient_name: str
     patient_age: int
     patient_phone: str
 
+    doctor_id: int
     doctor_name: str
     doctor_phone: str
 
