@@ -11,7 +11,8 @@ from backend.schemas.payment_schema import (
 
 from backend.services.payment_service import (
     create_payment_service,
-    get_payment_by_id_service
+    get_payment_by_id_service,
+    get_payment_by_appointment_id_service
 )
 
 
@@ -25,3 +26,8 @@ def create_payment(data: CreatePayment, current_clinic=Depends(get_current_clini
 @router.get("/payments/{payment_id}", response_model=PaymentDetailResponse, status_code=status.HTTP_200_OK)
 def get_payment_by_id(payment_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
     return get_payment_by_id_service(db, current_clinic["clinic_id"], payment_id)
+
+
+@router.get("/appointments/{appointment_id}/payments", response_model=PaymentDetailResponse, status_code=status.HTTP_200_OK)
+def get_payment_by_appointment_id(appointment_id: int, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
+    return get_payment_by_appointment_id_service(db, current_clinic["clinic_id"], appointment_id)

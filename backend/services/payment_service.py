@@ -12,7 +12,8 @@ from backend.schemas.payment_schema import (
 from backend.repositories.payment_repository import (
     create_payment,
     get_payment_by_appointment_id_to_validate_create_payment,
-    get_payment_by_id
+    get_payment_by_id,
+    get_payment_by_appointment_id
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -73,6 +74,29 @@ def get_payment_by_id_service(db, clinic_id: int, payment_id: int):
             raise HTTPException(
                 status_code=404,
                 detail="Payment Not Found"
+            )
+        
+        payment["appointment_time"] = payment["appointment_time"].astimezone(IST)
+
+        return payment
+    except Exception:
+        raise
+
+
+def get_payment_by_appointment_id_service(db, clinic_id: int, appointment_id: int):
+    try:
+        appointment = get_appointment_by_id(db, clinic_id, appointment_id)
+        if not appointment:
+            raise HTTPException(
+                status_code=404,
+                detail="Appointment Not Found"
+            )
+        
+        payment = get_payment_by_appointment_id(db, clinic_id, appointment_id)
+        if not payment:
+            raise HTTPException(
+                status_code=404,
+                detail="Payment Not Found For This Appointment"
             )
         
         payment["appointment_time"] = payment["appointment_time"].astimezone(IST)
