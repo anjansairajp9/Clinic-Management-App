@@ -37,7 +37,7 @@ def get_payment_by_appointment_id_to_validate_create_payment(db, clinic_id: int,
         return cursor.fetchone()
 
 
-# GET PAYMENT BY ID, UPDATE PAYMENT
+# GET PAYMENT BY ID, UPDATE PAYMENT, DELETE PAYMENT
 def get_payment_by_id(db, clinic_id: int, payment_id: int):
     with db.cursor() as cursor:
         cursor.execute(

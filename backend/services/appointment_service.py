@@ -404,8 +404,16 @@ def get_appointment_schedule_service(
         if not appointments:
             return []
         
+        today = date.today()
+
         for appointment in appointments:
             appointment["appointment_time"] = appointment["appointment_time"].astimezone(IST)
+
+            dob = appointment["patient_dob"]
+            age = (today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day)))
+            appointment["patient_age"] = age
+
+            appointment.pop("patient_dob")
 
         return appointments
     except Exception:

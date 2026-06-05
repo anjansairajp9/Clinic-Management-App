@@ -3,7 +3,6 @@ from fastapi import HTTPException, UploadFile
 from datetime import date
 from zoneinfo import ZoneInfo
 
-import os
 import uuid
 from pathlib import Path
 

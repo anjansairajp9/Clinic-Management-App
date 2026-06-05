@@ -68,7 +68,7 @@ def get_treatment_by_appointment_id(db, clinic_id: int, appointment_id: int):
         return cursor.fetchone()
 
 
-# GET TREATMENT BY ID, UPDATE TREATMENT
+# GET TREATMENT BY ID, UPDATE TREATMENT, DELETE PAYMENT
 def get_treatment_by_id(db, clinic_id: int, treatment_id: int):
     with db.cursor() as cursor:
         cursor.execute(

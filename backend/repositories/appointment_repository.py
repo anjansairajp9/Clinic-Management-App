@@ -402,6 +402,7 @@ def get_appointment_schedule(
             appointments.id AS id,
 
             patients.name AS patient_name,
+            patients.dob AS patient_dob,
             patients.phone AS patient_phone,
 
             doctors.name AS doctor_name,
