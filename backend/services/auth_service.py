@@ -20,7 +20,8 @@ from backend.schemas.auth_schema import (
     RegisterClinic,
     LoginClinic,
     ForgotPassword,
-    ResetPassword
+    ResetPassword,
+    ClinicUpdate
 )
 
 from backend.repositories.auth_repository import (
@@ -34,7 +35,9 @@ from backend.repositories.auth_repository import (
     get_clinic_by_password_reset_tokens,
     set_new_clinic_password,
     mark_password_reset_token_used,
-    delete_refresh_token_by_id_after_password_reset
+    delete_refresh_token_by_id_after_password_reset,
+    get_current_clinic_details,
+    update_clinic_details
 )
 
 def create_clinic_service(db, data: RegisterClinic):
@@ -209,6 +212,63 @@ def reset_password_service(db, data: ResetPassword):
         return {
             "message": "Password Reset Successful"
         }
+    except Exception:
+        db.rollback()
+        raise
+
+
+def get_current_clinic_details_service(db, clinic_id: int):
+    try:
+        clinic = get_current_clinic_details(db, clinic_id)
+        if not clinic:
+            raise HTTPException(
+                status_code=404,
+                detail="Clinic Not Found"
+            )
+        
+        return clinic
+    except Exception:
+        raise
+
+
+def update_clinic_service(db, clinic_id: int, data: ClinicUpdate):
+    try:
+        clinic = get_current_clinic_details(db, clinic_id)
+        if not clinic:
+            raise HTTPException(
+                status_code=404,
+                detail="Clinic Not Found"
+            )
+        
+        update_data = data.model_dump(exclude_unset=True)
+        if not update_data:
+            raise HTTPException(
+                status_code=400,
+                detail="No Fields Provided For Update"
+            )
+        
+        if "phone" in update_data:
+            update_data["phone"] = format_phn_number(update_data["phone"])
+
+        updated_clinic = update_clinic_details(db, clinic_id, update_data)
+        if not updated_clinic:
+            raise HTTPException(
+                status_code=400,
+                detail="Failed To Update Clinic Details"
+            )
+        
+        db.commit()
+
+        return updated_clinic
+    except errors.UniqueViolation:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Email or Phone already exists"
+        )
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception:
         db.rollback()
         raise

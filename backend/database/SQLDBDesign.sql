@@ -119,19 +119,23 @@ CREATE TABLE treatments (
 
     CONSTRAINT fk_treatment_clinic
         FOREIGN KEY (clinic_id)
-        REFERENCES clinics(id),
+        REFERENCES clinics(id)
+		ON DELETE CASCADE,
 
     CONSTRAINT fk_treatment_patient
         FOREIGN KEY (patient_id)
-        REFERENCES patients(id),
+        REFERENCES patients(id)
+		ON DELETE CASCADE,
 
     CONSTRAINT fk_treatment_doctor
         FOREIGN KEY (doctor_id)
-        REFERENCES doctors(id),
+        REFERENCES doctors(id)
+		ON DELETE CASCADE,
 
     CONSTRAINT fk_treatment_appointment
         FOREIGN KEY (appointment_id)
         REFERENCES appointments(id)
+		ON DELETE CASCADE
 );
 
 
@@ -150,11 +154,13 @@ CREATE TABLE treatment_files (
 
     CONSTRAINT fk_treatment_file_clinic
         FOREIGN KEY (clinic_id)
-        REFERENCES clinics(id),
+        REFERENCES clinics(id)
+		ON DELETE CASCADE,
 
     CONSTRAINT fk_treatment_file_treatment
         FOREIGN KEY (treatment_id)
         REFERENCES treatments(id)
+		ON DELETE CASCADE
 );
 
 

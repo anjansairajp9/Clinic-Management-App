@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr
+from datetime import datetime
 
 class RegisterClinic(BaseModel):
     name: str
@@ -42,3 +43,20 @@ class ResetPassword(BaseModel):
 
 class ResetPasswordResponse(BaseModel):
     message: str
+
+
+class ClinicDetailResponse(BaseModel):
+    id: int
+    name: str
+    phone: str
+    email: EmailStr
+    address: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class ClinicUpdate(BaseModel):
+    name: str | None = None
+    phone: str | None = Field(default=None, min_length=10, max_length=15)
+    email: EmailStr | None = None
+    address: str | None = None

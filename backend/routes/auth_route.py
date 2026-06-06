@@ -9,7 +9,9 @@ from backend.schemas.auth_schema import (
     ForgotPassword,
     ForgotPasswordResponse,
     ResetPassword,
-    ResetPasswordResponse
+    ResetPasswordResponse,
+    ClinicDetailResponse,
+    ClinicUpdate
 )
 from backend.services.auth_service import (
     create_clinic_service, 
@@ -17,9 +19,13 @@ from backend.services.auth_service import (
     logout_clinic_service,
     create_new_access_token_service,
     forgot_password_service,
-    reset_password_service
+    reset_password_service,
+    get_current_clinic_details_service,
+    update_clinic_service
 )
+
 from backend.database.db import get_db
+from backend.core.security import get_current_clinic
 
 router = APIRouter()
 
@@ -90,3 +96,13 @@ def forgot_password(data: ForgotPassword, db=Depends(get_db)):
 @router.post("/reset-password", response_model=ResetPasswordResponse, status_code=status.HTTP_200_OK)
 def reset_password(data: ResetPassword, db=Depends(get_db)):
     return reset_password_service(db, data)
+
+
+@router.get("/clinic/me", response_model=ClinicDetailResponse, status_code=status.HTTP_200_OK)
+def get_current_clinic_details(current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
+    return get_current_clinic_details_service(db, current_clinic["clinic_id"])
+
+
+@router.patch("/clinic/me", response_model=ClinicDetailResponse, status_code=status.HTTP_200_OK)
+def update_clinic(data: ClinicUpdate, current_clinic=Depends(get_current_clinic), db=Depends(get_db)):
+    return update_clinic_service(db, current_clinic["clinic_id"], data)

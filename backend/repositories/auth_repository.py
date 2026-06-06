@@ -90,3 +90,47 @@ def mark_password_reset_token_used(db, reset_token: str):
 def delete_refresh_token_by_id_after_password_reset(db, clinic_id: int):
     with db.cursor() as cursor:
         cursor.execute("DELETE FROM refresh_tokens WHERE clinic_id = %s", (clinic_id,))
+
+
+# GET CURRENT CLINIC DETAILS, UPDATE CLINIC DETAILS
+def get_current_clinic_details(db, clinic_id: int):
+    with db.cursor() as cursor:
+        cursor.execute(
+             """SELECT
+                    id, name, phone, email, address, created_at, updated_at
+                FROM clinics
+                WHERE id = %s
+                AND is_active = TRUE
+            """, (clinic_id,))
+        
+        return cursor.fetchone()
+        
+
+# UPDATE CLINIC DETAILS
+def update_clinic_details(db, clinic_id: int, update_data: dict):
+    fields = []
+    values = []
+
+    for key, value in update_data.items():
+        fields.append(f"{key} = %s")
+        values.append(value)
+
+    fields.append("updated_at = NOW()")
+
+    values.extend([clinic_id])
+
+    query = f"""
+        UPDATE clinics
+        SET {", ".join(fields)}
+
+        WHERE id = %s
+        AND is_active = TRUE
+
+        RETURNING
+            id, name, phone, email, address, created_at, updated_at
+    """
+
+    with db.cursor() as cursor:
+        cursor.execute(query, tuple(values))
+
+        return cursor.fetchone()
