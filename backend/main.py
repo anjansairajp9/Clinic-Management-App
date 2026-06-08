@@ -25,8 +25,6 @@ def health_check():
 app.mount("/uploads", StaticFiles(directory="backend/uploads"), name="uploads")
 
 
-
-
 app.include_router(auth_route.router)
 
 app.include_router(patient_route.router)
