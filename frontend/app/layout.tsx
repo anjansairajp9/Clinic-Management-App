@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
-import { DM_Sans, DM_Serif_Display } from "next/font/google";
+import {
+  DM_Sans,
+  DM_Serif_Display,
+} from "next/font/google";
 import "./globals.css";
+
+import AuthProvider from "@/providers/AuthProvider";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -17,16 +22,23 @@ const dmSerif = DM_Serif_Display({
 
 export const metadata: Metadata = {
   title: "Clinic Management App",
-  description: "Modern Clinic Management System",
+  description:
+    "Modern Clinic Management System",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en">
-      <body className={`${dmSans.variable} ${dmSerif.variable}`}>
-        {children}
+      <body
+        className={`${dmSans.variable} ${dmSerif.variable}`}
+      >
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
