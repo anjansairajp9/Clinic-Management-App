@@ -47,23 +47,47 @@ def get_doctor_by_id(db, clinic_id: int, doctor_id: int):
 
 # SEARCH DOCTORS
 def search_doctors(db, clinic_id: int, query: str, limit: int, offset: int):
+    conditions = [
+        "clinic_id = %s",
+        "is_active = TRUE"
+    ]
+
+    values = [clinic_id]
+
+    if query:
+        conditions.append(
+            """
+            (
+                name ILIKE %s
+                OR phone ILIKE %s
+                OR specialization ILIKE %s
+            )
+            """
+        )
+
+        search_term = f"%{query}%"
+
+        values.extend([
+            search_term,
+            search_term,
+            search_term
+        ])
+
+    values.extend([limit, offset])
+
+    query_sql = f"""
+        SELECT
+            id, name, phone, specialization
+        FROM doctors
+        WHERE {" AND ".join(conditions)}
+        ORDER BY created_at
+        LIMIT %s
+        OFFSET %s
+    """
+
     with db.cursor() as cursor:
-        cursor.execute(
-             """SELECT
-                    id, name, phone, specialization
-                FROM doctors
-                WHERE clinic_id = %s
-                AND is_active = TRUE
-                AND (
-                    name ILIKE %s
-                    OR phone ILIKE %s
-                    OR specialization ILIKE %s
-                )
-                ORDER BY created_at DESC
-                LIMIT %s
-                OFFSET %s
-            """, (clinic_id, f"%{query}%", f"%{query}%", f"%{query}%", limit, offset))
-        
+        cursor.execute(query_sql, tuple(values))
+
         return cursor.fetchall()
 
 

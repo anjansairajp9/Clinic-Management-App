@@ -29,7 +29,7 @@ def create_doctor(data: DoctorCreate, current_clinic=Depends(get_current_clinic)
 
 @router.get("/doctors/search", response_model=list[DoctorSearchResponse], status_code=status.HTTP_200_OK)
 def search_doctors(
-    query: str, 
+    query: str | None = None, 
     page: int = Query(1, ge=1), 
     limit: int = Query(10, ge=1, le=50), 
     current_clinic=Depends(get_current_clinic), 
