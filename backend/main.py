@@ -9,7 +9,8 @@ from backend.routes import (
     appointment_route,
     treatment_route,
     payment_route,
-    super_admin_route
+    super_admin_route,
+    dashboard_route
 )
 
 
@@ -48,3 +49,5 @@ app.include_router(treatment_route.router)
 app.include_router(payment_route.router)
 
 app.include_router(super_admin_route.router)
+
+app.include_router(dashboard_route.router)
