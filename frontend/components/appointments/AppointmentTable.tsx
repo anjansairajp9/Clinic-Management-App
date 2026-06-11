@@ -32,12 +32,14 @@ type Props = {
 	searchQuery: string;
 	status: string;
 	doctorId: string;
+	refreshKey: number;
 };
 
 export default function AppointmentTable({
 	searchQuery,
 	status,
 	doctorId,
+	refreshKey,
 }: Props) {
 	const [
 		appointments,
@@ -131,6 +133,7 @@ export default function AppointmentTable({
 		status,
 		doctorId,
 		selectedDate,
+		refreshKey,
 	]);
 
 	useEffect(() => {

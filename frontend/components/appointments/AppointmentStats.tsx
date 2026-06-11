@@ -139,7 +139,13 @@ function StatCard({
 	);
 }
 
-export default function AppointmentStats() {
+type Props = {
+	refreshKey: number;
+}
+
+export default function AppointmentStats({ 
+	refreshKey, 
+}: Props) {
 	const [
 		stats,
 		setStats,
@@ -188,7 +194,7 @@ export default function AppointmentStats() {
 			};
 
 		fetchStats();
-	}, [selectedDate]);
+	}, [selectedDate, refreshKey,]);
 
 	if (loading) {
 		return (

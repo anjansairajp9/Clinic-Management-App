@@ -41,3 +41,63 @@ export interface AppointmentDetails {
 
 	total_amount: string | null;
 }
+
+
+/* -------------------------------- */
+/* CREATE APPOINTMENT TYPES */
+/* -------------------------------- */
+
+export interface PatientSearchResult {
+	id: number;
+	name: string;
+	phone: string;
+	gender: string;
+	dob: string;
+	age: number;
+}
+
+export interface DoctorSearchResult {
+	id: number;
+	name: string;
+}
+
+export interface AppointmentAvailabilitySlot {
+	time: string;
+	available: boolean;
+}
+
+export interface AppointmentAvailabilityResponse {
+	appointment_date: string;
+	doctor_id: number | null;
+	available_slots: AppointmentAvailabilitySlot[];
+}
+
+export interface CreateAppointmentPayload {
+	patient_id: number;
+	doctor_id: number;
+	appointment_type:
+		| "scheduled"
+		| "walk_in";
+	appointment_date: string;
+	appointment_time: string;
+	complaint?: string;
+	notes?: string;
+}
+
+export interface CreateAppointmentResponse {
+	id: number;
+	patient_id: number;
+	doctor_id: number;
+	appointment_type:
+		| "scheduled"
+		| "walk_in";
+	appointment_time: string;
+	status:
+		| "scheduled"
+		| "completed"
+		| "cancelled"
+		| "no_show";
+	complaint: string | null;
+	notes: string | null;
+	created_at: string;
+}

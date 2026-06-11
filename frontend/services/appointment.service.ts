@@ -1,5 +1,14 @@
 import api from "@/lib/axios";
 
+import type {
+	CreateAppointmentPayload,
+	AppointmentAvailabilityResponse,
+} from "@/types/appointment";
+
+/* -------------------------------- */
+/* DASHBOARD */
+/* -------------------------------- */
+
 export const getAppointmentDashboardStats =
 	async (
 		appointment_date?: string
@@ -16,6 +25,10 @@ export const getAppointmentDashboardStats =
 
 		return response.data;
 	};
+
+/* -------------------------------- */
+/* APPOINTMENTS TABLE */
+/* -------------------------------- */
 
 type GetAppointmentsParams =
 	{
@@ -87,6 +100,26 @@ export const searchAppointments =
 		return response.data;
 	};
 
+/* -------------------------------- */
+/* APPOINTMENT DETAILS */
+/* -------------------------------- */
+
+export const getAppointmentById =
+	async (
+		appointmentId: number
+	) => {
+		const response =
+			await api.get(
+				`/appointments/${appointmentId}`
+			);
+
+		return response.data;
+	};
+
+/* -------------------------------- */
+/* DOCTOR SEARCH */
+/* -------------------------------- */
+
 export const searchDoctors =
 	async (
 		query = ""
@@ -106,13 +139,73 @@ export const searchDoctors =
 		return response.data;
 	};
 
-export const getAppointmentById =
+/* -------------------------------- */
+/* PATIENT SEARCH */
+/* -------------------------------- */
+
+export const searchPatients =
 	async (
-		appointmentId: number
+		query = ""
 	) => {
 		const response =
 			await api.get(
-				`/appointments/${appointmentId}`
+				"/patients/search",
+				{
+					params: {
+						query,
+						page: 1,
+						limit: 10,
+					},
+				}
+			);
+
+		return response.data;
+	};
+
+/* -------------------------------- */
+/* AVAILABILITY */
+/* -------------------------------- */
+
+type AvailabilityParams =
+	{
+		appointment_date: string;
+		doctor_id?: number;
+		appointment_id?: number;
+	};
+
+export const getAppointmentAvailability =
+	async ({
+		appointment_date,
+		doctor_id,
+		appointment_id,
+	}: AvailabilityParams): Promise<AppointmentAvailabilityResponse> => {
+		const response =
+			await api.get(
+				"/appointments/availability",
+				{
+					params: {
+						appointment_date,
+						doctor_id,
+						appointment_id,
+					},
+				}
+			);
+
+		return response.data;
+	};
+
+/* -------------------------------- */
+/* CREATE APPOINTMENT */
+/* -------------------------------- */
+
+export const createAppointment =
+	async (
+		data: CreateAppointmentPayload
+	) => {
+		const response =
+			await api.post(
+				"/appointments",
+				data
 			);
 
 		return response.data;
