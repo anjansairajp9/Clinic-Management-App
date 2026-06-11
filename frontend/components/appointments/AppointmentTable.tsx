@@ -13,6 +13,7 @@ import {
 import {
 	getAppointments,
 	searchAppointments,
+	getAppointmentById,
 } from "@/services/appointment.service";
 
 import {
@@ -21,9 +22,11 @@ import {
 
 import type {
 	Appointment,
+	AppointmentDetails,
 } from "@/types/appointment";
 
 import AppointmentRow from "./AppointmentRow";
+import AppointmentDetailsDrawer from "./AppointmentDetailsDrawer";
 
 type Props = {
 	searchQuery: string;
@@ -43,8 +46,28 @@ export default function AppointmentTable({
 		Appointment[]
 	>([]);
 
-	const [page, setPage] =
-		useState(1);
+	const [
+		page,
+		setPage,
+	] = useState(1);
+
+	const [
+		selectedAppointment,
+		setSelectedAppointment,
+	] =
+		useState<AppointmentDetails | null>(
+			null
+		);
+
+	const [
+		isDrawerOpen,
+		setIsDrawerOpen,
+	] = useState(false);
+
+	const [
+		loadingDetails,
+		setLoadingDetails,
+	] = useState(false);
 
 	const limit = 10;
 
@@ -59,7 +82,6 @@ export default function AppointmentTable({
 				try {
 					let response;
 
-					// SEARCH MODE
 					if (
 						searchQuery.trim()
 					) {
@@ -75,10 +97,7 @@ export default function AppointmentTable({
 										selectedDate,
 								}
 							);
-					}
-
-					// NORMAL TABLE MODE
-					else {
+					} else {
 						response =
 							await getAppointments(
 								{
@@ -100,7 +119,6 @@ export default function AppointmentTable({
 					error
 				) {
 					console.error(
-						"Failed to fetch appointments",
 						error
 					);
 				}
@@ -115,7 +133,6 @@ export default function AppointmentTable({
 		selectedDate,
 	]);
 
-	// Reset page when filters change
 	useEffect(() => {
 		setPage(1);
 	}, [
@@ -125,122 +142,139 @@ export default function AppointmentTable({
 		selectedDate,
 	]);
 
+	const handleView =
+		async (
+			appointmentId: number
+		) => {
+			try {
+				setIsDrawerOpen(
+					true
+				);
+
+				setLoadingDetails(
+					true
+				);
+
+				const response =
+					await getAppointmentById(
+						appointmentId
+					);
+
+				setSelectedAppointment(
+					response
+				);
+			} catch (
+				error
+			) {
+				console.error(
+					error
+				);
+			} finally {
+				setLoadingDetails(
+					false
+				);
+			}
+		};
+
+	const closeDrawer =
+		() => {
+			setIsDrawerOpen(
+				false
+			);
+
+			setTimeout(
+				() => {
+					setSelectedAppointment(
+						null
+					);
+				},
+				250
+			);
+		};
+
 	return (
-		<div
-			style={{
-				background:
-					"linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015))",
-				border:
-					"1px solid rgba(255,255,255,0.06)",
-				borderRadius:
-					"28px",
-				overflow:
-					"hidden",
-			}}
-		>
-			{/* Header */}
+		<>
 			<div
 				style={{
-					padding:
-						"20px 24px",
-					borderBottom:
-						"1px solid rgba(255,255,255,0.05)",
+					background:
+						"linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015))",
+					border:
+						"1px solid rgba(255,255,255,0.06)",
+					borderRadius:
+						"28px",
+					overflow:
+						"hidden",
 				}}
 			>
-				<h2
+				<div
 					style={{
-						color:
-							"#f0f6ff",
-						margin: 0,
-						fontSize:
-							"18px",
-						fontWeight:
-							600,
+						padding:
+							"20px 24px",
+						borderBottom:
+							"1px solid rgba(255,255,255,0.05)",
 					}}
 				>
-					Appointments
-				</h2>
-
-				<p
-					style={{
-						color:
-							"#7a9ab8",
-						fontSize:
-							"12px",
-						marginTop:
-							"6px",
-						marginBottom:
-							0,
-					}}
-				>
-					Manage clinic
-					schedules and
-					monitor patient
-					visits.
-				</p>
-			</div>
-
-			<table
-				style={{
-					width: "100%",
-					borderCollapse:
-						"collapse",
-				}}
-			>
-				<thead>
-					<tr
+					<h2
 						style={{
-							borderBottom:
-								"1px solid rgba(255,255,255,0.08)",
+							color:
+								"#f0f6ff",
+							margin:
+								0,
+							fontSize:
+								"18px",
+							fontWeight:
+								600,
 						}}
 					>
-						{[
-							"Patient",
-							"Doctor",
-							"Date",
-							"Time",
-							"Status",
-							"Actions",
-						].map(
-							(
-								header
-							) => (
-								<th
-									key={
-										header
-									}
-									style={{
-										textAlign:
-											"left",
-										padding:
-											"18px",
-										paddingBottom:
-											"16px",
-										color:
-											"#7a9ab8",
-										fontSize:
-											"11px",
-										fontWeight:
-											600,
-										letterSpacing:
-											"0.8px",
-										textTransform:
-											"uppercase",
-									}}
-								>
-									{
-										header
-									}
-								</th>
-							)
-						)}
-					</tr>
-				</thead>
+						Appointments
+					</h2>
+				</div>
 
-				<tbody>
-					{appointments.length >
-					0 ? (
-						appointments.map(
+				<table
+					style={{
+						width:
+							"100%",
+						borderCollapse:
+							"collapse",
+					}}
+				>
+					<thead>
+						<tr>
+							{[
+								"Patient",
+								"Doctor",
+								"Date",
+								"Time",
+								"Status",
+								"Actions",
+							].map(
+								(
+									header
+								) => (
+									<th
+										key={
+											header
+										}
+										style={{
+											textAlign: "left",
+											padding: "18px",
+											color: "#7a9ab8",
+											fontSize: "11px",
+											textTransform: "uppercase",
+											borderBottom: "1px solid rgba(255,255,255,0.08)",
+										}}
+									>
+										{
+											header
+										}
+									</th>
+								)
+							)}
+						</tr>
+					</thead>
+
+					<tbody>
+						{appointments.map(
 							(
 								appointment
 							) => (
@@ -251,138 +285,121 @@ export default function AppointmentTable({
 									appointment={
 										appointment
 									}
+									onView={
+										handleView
+									}
 								/>
 							)
-						)
-					) : (
-						<tr>
-							<td
-								colSpan={
-									6
-								}
-								style={{
-									padding:
-										"40px",
-									textAlign:
-										"center",
-									color:
-										"#7a9ab8",
-									fontSize:
-										"14px",
-								}}
-							>
-								No appointments found
-							</td>
-						</tr>
-					)}
-				</tbody>
-			</table>
-
-			{/* Pagination */}
-			<div
-				style={{
-					padding:
-						"14px 24px",
-					borderTop:
-						"1px solid rgba(255,255,255,0.05)",
-					display:
-						"flex",
-					alignItems:
-						"center",
-					justifyContent:
-						"space-between",
-				}}
-			>
-				<button
-					onClick={() =>
-						setPage(
-							(prev) =>
-								Math.max(
-									prev - 1,
-									1
-								)
-						)
-					}
-					disabled={
-						page === 1
-					}
-					style={{
-						...paginationButton,
-						opacity:
-							page ===
-							1
-								? 0.5
-								: 1,
-					}}
-				>
-					<ChevronLeft
-						size={14}
-					/>
-					Previous
-				</button>
+						)}
+					</tbody>
+				</table>
 
 				<div
 					style={{
-						color:
-							"#7a9ab8",
-						fontSize:
-							"12px",
+						padding:
+							"14px 24px",
+						display:
+							"flex",
+						justifyContent:
+							"space-between",
 					}}
 				>
-					Page{" "}
+					<button
+						onClick={() =>
+							setPage(
+								(
+									prev
+								) =>
+									Math.max(
+										prev -
+											1,
+										1
+									)
+							)
+						}
+						style={
+							paginationButton
+						}
+					>
+						<ChevronLeft
+							size={
+								14
+							}
+						/>
+						Previous
+					</button>
+
 					<span
 						style={{
 							color:
-								"#f0f6ff",
-							fontWeight:
-								600,
+								"#7a9ab8",
 						}}
 					>
+						Page{" "}
 						{page}
 					</span>
+
+					<button
+						onClick={() =>
+							setPage(
+								(
+									prev
+								) =>
+									prev +
+									1
+							)
+						}
+						style={
+							paginationButton
+						}
+					>
+						Next
+						<ChevronRight
+							size={
+								14
+							}
+						/>
+					</button>
 				</div>
-
-				<button
-					onClick={() =>
-						setPage(
-							(prev) =>
-								prev + 1
-						)
-					}
-					style={
-						paginationButton
-					}
-				>
-					Next
-
-					<ChevronRight
-						size={14}
-					/>
-				</button>
 			</div>
-		</div>
+
+			<AppointmentDetailsDrawer
+				isOpen={
+					isDrawerOpen
+				}
+				onClose={
+					closeDrawer
+				}
+				appointment={
+					selectedAppointment
+				}
+				loading={
+					loadingDetails
+				}
+			/>
+		</>
 	);
 }
 
 const paginationButton =
-{
-	background:
-		"rgba(255,255,255,0.04)",
-	border:
-		"1px solid rgba(255,255,255,0.08)",
-	color:
-		"#d6e2f0",
-	padding:
-		"8px 14px",
-	borderRadius:
-		"14px",
-	cursor:
-		"pointer",
-	display:
-		"flex",
-	alignItems:
-		"center",
-	gap: "8px",
-	fontSize:
-		"12px",
-};
+	{
+		background:
+			"rgba(255,255,255,0.04)",
+		border:
+			"1px solid rgba(255,255,255,0.08)",
+		color:
+			"#d6e2f0",
+		padding:
+			"8px 14px",
+		borderRadius:
+			"14px",
+		cursor:
+			"pointer",
+		display:
+			"flex",
+		alignItems:
+			"center",
+		gap: "8px",
+		fontSize:
+			"12px",
+	};

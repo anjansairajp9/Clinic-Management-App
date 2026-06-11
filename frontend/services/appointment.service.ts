@@ -105,3 +105,15 @@ export const searchDoctors =
 
 		return response.data;
 	};
+
+export const getAppointmentById =
+	async (
+		appointmentId: number
+	) => {
+		const response =
+			await api.get(
+				`/appointments/${appointmentId}`
+			);
+
+		return response.data;
+	};

@@ -14,10 +14,14 @@ import type {
 
 type Props = {
 	appointment: Appointment;
+	onView: (
+		appointmentId: number
+	) => void;
 };
 
 export default function AppointmentRow({
 	appointment,
+	onView,
 }: Props) {
 	const getStatusStyle =
 		(status: string) => {
@@ -93,11 +97,7 @@ export default function AppointmentRow({
 			}}
 		>
 			{/* Patient */}
-			<td
-				style={
-					cellStyle
-				}
-			>
+			<td style={cellStyle}>
 				<div
 					style={{
 						display:
@@ -153,11 +153,7 @@ export default function AppointmentRow({
 			</td>
 
 			{/* Doctor */}
-			<td
-				style={
-					cellStyle
-				}
-			>
+			<td style={cellStyle}>
 				<div
 					style={{
 						display:
@@ -211,11 +207,7 @@ export default function AppointmentRow({
 			</td>
 
 			{/* Date */}
-			<td
-				style={
-					cellStyle
-				}
-			>
+			<td style={cellStyle}>
 				<div
 					style={
 						iconTextStyle
@@ -241,11 +233,7 @@ export default function AppointmentRow({
 			</td>
 
 			{/* Time */}
-			<td
-				style={
-					cellStyle
-				}
-			>
+			<td style={cellStyle}>
 				<div
 					style={
 						iconTextStyle
@@ -270,11 +258,7 @@ export default function AppointmentRow({
 			</td>
 
 			{/* Status */}
-			<td
-				style={
-					cellStyle
-				}
-			>
+			<td style={cellStyle}>
 				<span
 					style={{
 						...getStatusStyle(
@@ -299,12 +283,25 @@ export default function AppointmentRow({
 			</td>
 
 			{/* View */}
-			<td
-				style={
-					cellStyle
-				}
-			>
+			<td style={cellStyle}>
 				<button
+					onClick={() =>
+						onView(
+							appointment.id
+						)
+					}
+					onMouseEnter={(
+						e
+					) => {
+						e.currentTarget.style.background =
+							"rgba(56,189,248,0.16)";
+					}}
+					onMouseLeave={(
+						e
+					) => {
+						e.currentTarget.style.background =
+							"rgba(56,189,248,0.10)";
+					}}
 					style={{
 						background:
 							"rgba(56,189,248,0.10)",
@@ -358,4 +355,3 @@ const iconTextStyle =
 		color:
 			"#7a9ab8",
 	};
-	
