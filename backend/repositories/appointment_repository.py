@@ -79,7 +79,7 @@ def get_appointment_by_id(db, clinic_id: int, appointment_id: int):
                     appointments.status AS status,
                     appointments.complaint AS complaint,
                     appointments.notes AS notes,
-                    appointments.total_amount AS total_amount,
+                    COALESCE(payments.total_amount, 0) AS total_amount,
                     appointments.created_at AS created_at,
                     appointments.updated_at AS updated_at
                 
@@ -90,6 +90,11 @@ def get_appointment_by_id(db, clinic_id: int, appointment_id: int):
 
                 JOIN doctors 
                     ON appointments.doctor_id = doctors.id
+
+                LEFT JOIN payments
+                    ON payments.appointment_id = appointments.id
+                    AND payments.is_active = TRUE
+                    
 
                 WHERE appointments.clinic_id = %s
                 AND appointments.id = %s

@@ -55,7 +55,7 @@ class AppointmentDetailResponse(BaseModel):
     status: AppointmentStatusEnum
     complaint: str | None = None
     notes: str | None = None
-    total_amount: Decimal
+    total_amount: Decimal | None = None
     created_at: datetime
     updated_at: datetime
 
