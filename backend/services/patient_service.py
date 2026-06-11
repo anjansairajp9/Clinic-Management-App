@@ -80,14 +80,10 @@ def get_patient_by_id_service(db, clinic_id: int, patient_id: int):
         raise
 
 
-def search_patients_service(db, clinic_id: int, query: str, page: int, limit: int):
+def search_patients_service(db, clinic_id: int, query: str | None, page: int, limit: int):
     try:
-        query = query.strip()
-        if not query:
-            raise HTTPException(
-                status_code=400,
-                detail="Search Query is Required"
-            )
+        if query:
+            query = query.strip()
         
         offset = (page - 1) * limit
 

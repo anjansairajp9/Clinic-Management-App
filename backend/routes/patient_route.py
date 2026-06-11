@@ -33,7 +33,7 @@ def create_patient(data: PatientCreate, current_clinic=Depends(get_current_clini
 
 @router.get("/patients/search", response_model=list[PatientSearchResponse], status_code=status.HTTP_200_OK)
 def search_patients(
-    query: str, 
+    query: str | None = None, 
     page: int = Query(1, ge=1), 
     limit: int = Query(10, ge=1, le=50), 
     current_clinic=Depends(get_current_clinic), 
