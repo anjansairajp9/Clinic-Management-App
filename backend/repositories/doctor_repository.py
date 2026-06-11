@@ -80,7 +80,7 @@ def search_doctors(db, clinic_id: int, query: str, limit: int, offset: int):
             id, name, phone, specialization
         FROM doctors
         WHERE {" AND ".join(conditions)}
-        ORDER BY created_at
+        ORDER BY created_at DESC
         LIMIT %s
         OFFSET %s
     """
