@@ -210,3 +210,61 @@ export const createAppointment =
 
 		return response.data;
 	};
+
+
+/* -------------------------------- */
+/* UPDATE APPOINTMENT */
+/* -------------------------------- */
+
+export const updateAppointment =
+	async (
+		appointmentId: number,
+		data: Partial<CreateAppointmentPayload>
+	) => {
+		const response =
+			await api.patch(
+				`/appointments/${appointmentId}`,
+				data
+			);
+
+		return response.data;
+	};
+
+/* -------------------------------- */
+/* DELETE APPOINTMENT */
+/* -------------------------------- */
+
+export const deleteAppointment =
+	async (
+		appointmentId: number
+	) => {
+		const response =
+			await api.delete(
+				`/appointments/${appointmentId}`
+			);
+
+		return response.data;
+	};
+
+/* -------------------------------- */
+/* UPDATE APPOINTMENT STATUS */
+/* -------------------------------- */
+
+export const updateAppointmentStatus =
+	async (
+		appointmentId: number,
+		status:
+			| "completed"
+			| "cancelled"
+			| "no_show"
+	) => {
+		const response =
+			await api.patch(
+				`/appointments/${appointmentId}/status`,
+				{
+					status,
+				}
+			);
+
+		return response.data;
+	};

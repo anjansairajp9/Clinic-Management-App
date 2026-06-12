@@ -1,3 +1,14 @@
+export type AppointmentStatus =
+	| "scheduled"
+	| "completed"
+	| "cancelled"
+	| "no_show";
+
+export type AppointmentType =
+	| "scheduled"
+	| "walk_in";
+
+
 export interface AppointmentStats {
 	total_appointments: number;
 	scheduled_appointments: number;
@@ -14,14 +25,16 @@ export interface Appointment {
 	doctor_name: string;
 	doctor_phone: string;
 	doctor_specialization: string;
-	appointment_type: string;
+	appointment_type: AppointmentType;
 	appointment_time: string;
-	status: string;
+	status: AppointmentStatus;
 	complaint: string | null;
 	notes: string | null;
 }
 
 export interface AppointmentDetails {
+	id: number;
+
 	patient_id: number;
 	patient_name: string;
 	patient_age: number;
@@ -32,14 +45,12 @@ export interface AppointmentDetails {
 	doctor_phone: string;
 	doctor_specialization: string;
 
-	appointment_type: string;
+	appointment_type: AppointmentType;
 	appointment_time: string;
-	status: string;
+	status: AppointmentStatus;
 
 	complaint: string | null;
 	notes: string | null;
-
-	total_amount: string | null;
 }
 
 
@@ -75,9 +86,7 @@ export interface AppointmentAvailabilityResponse {
 export interface CreateAppointmentPayload {
 	patient_id: number;
 	doctor_id: number;
-	appointment_type:
-		| "scheduled"
-		| "walk_in";
+	appointment_type: AppointmentType;
 	appointment_date: string;
 	appointment_time: string;
 	complaint?: string;
@@ -88,15 +97,9 @@ export interface CreateAppointmentResponse {
 	id: number;
 	patient_id: number;
 	doctor_id: number;
-	appointment_type:
-		| "scheduled"
-		| "walk_in";
+	appointment_type: AppointmentType;
 	appointment_time: string;
-	status:
-		| "scheduled"
-		| "completed"
-		| "cancelled"
-		| "no_show";
+	status: AppointmentStatus;
 	complaint: string | null;
 	notes: string | null;
 	created_at: string;

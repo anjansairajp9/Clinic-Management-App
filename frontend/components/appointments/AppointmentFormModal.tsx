@@ -15,14 +15,16 @@ import {
 } from "lucide-react";
 
 import {
-  searchDoctors,
   createAppointment,
+  updateAppointment,
+  searchDoctors,
   getAppointmentAvailability,
 } from "@/services/appointment.service";
 
 import type {
   PatientSearchResult,
   AppointmentAvailabilitySlot,
+  AppointmentDetails,
 } from "@/types/appointment";
 
 import PatientSearchSelect from "./PatientSearchSelect";
@@ -38,13 +40,19 @@ type Doctor = {
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess?: () => void;
+
+  mode?: "create" | "edit";
+
+  appointment?: AppointmentDetails | null;
 };
 
-export default function CreateAppointmentModal({
+export default function AppointmentFormModal({
   isOpen,
   onClose,
   onSuccess,
+  mode = "create",
+  appointment,
 }: Props) {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<PatientSearchResult | null>(null);
@@ -96,7 +104,9 @@ export default function CreateAppointmentModal({
           doctor_id: doctorId ? Number(doctorId) : undefined,
         });
         setSlots(response.available_slots);
-        setSelectedTime(null);
+        if (mode !== "edit") {
+          setSelectedTime(null);
+        }
       } catch (error: any) {
         console.error(error);
         setSlots([]);
@@ -105,7 +115,74 @@ export default function CreateAppointmentModal({
       }
     };
     if (isOpen) fetchSlots();
-  }, [isOpen, doctorId, appointmentDate]);
+  }, [isOpen, doctorId, appointmentDate, mode,]);
+
+  useEffect(() => {
+    if (
+      mode !== "edit" ||
+      !appointment
+    ) {
+      return;
+    }
+
+    setDoctorId(
+      String(
+        appointment.doctor_id
+      )
+    );
+
+    setAppointmentType(
+      appointment.appointment_type
+    );
+
+    const appointmentDate =
+      new Date(
+        appointment.appointment_time
+      )
+        .toISOString()
+        .split("T")[0];
+
+    setAppointmentDate(
+      appointmentDate
+    );
+
+    const appointmentTime =
+      new Date(
+        appointment.appointment_time
+      )
+        .toTimeString()
+        .slice(0, 8);
+
+    setSelectedTime(
+      appointmentTime
+    );
+
+    setComplaint(
+      appointment.complaint ??
+      ""
+    );
+
+    setNotes(
+      appointment.notes ??
+      ""
+    );
+
+    setSelectedPatient({
+      id:
+        appointment.patient_id,
+      name:
+        appointment.patient_name,
+      phone:
+        appointment.patient_phone,
+      age:
+        appointment.patient_age,
+      gender: "",
+      dob: "",
+    });
+  }, [
+    mode,
+    appointment,
+  ]);
 
   const resetForm = () => {
     setSelectedPatient(null);
@@ -135,22 +212,68 @@ export default function CreateAppointmentModal({
 
       setSubmitting(true);
 
-      await createAppointment({
-        patient_id: selectedPatient.id,
-        doctor_id: Number(doctorId),
-        appointment_type: appointmentType,
-        appointment_date: appointmentDate,
-        appointment_time: selectedTime,
-        complaint: complaint.trim() || undefined,
-        notes: notes.trim() || undefined,
-      });
+      const payload = {
+        patient_id:
+          selectedPatient.id,
 
-      setSuccess("Appointment created successfully");
-      onSuccess();
-      setTimeout(() => { handleClose(); }, 1200);
+        doctor_id:
+          Number(
+            doctorId
+          ),
+
+        appointment_type:
+          appointmentType,
+
+        appointment_date:
+          appointmentDate,
+
+        appointment_time:
+          selectedTime,
+
+        complaint:
+          complaint.trim() ||
+          undefined,
+
+        notes:
+          notes.trim() ||
+          undefined,
+      };
+
+      if (
+        mode === "edit" &&
+        appointment
+      ) {
+        await updateAppointment(
+          appointment.id,
+          payload
+        );
+
+        setSuccess(
+          "Appointment updated successfully"
+        );
+      } else {
+        await createAppointment(
+          payload
+        );
+
+        setSuccess(
+          "Appointment created successfully"
+        );
+      }
+
+      onSuccess?.();
+
+      setTimeout(() => {
+        handleClose();
+      }, 1200);
     } catch (error: any) {
       console.error(error);
-      setError(error?.response?.data?.detail || "Failed to create appointment");
+      setError(
+        error?.response?.data?.detail ||
+        (mode === "edit"
+          ? "Failed to update appointment"
+          : "Failed to create appointment")
+      );
     } finally {
       setSubmitting(false);
     }
@@ -240,10 +363,14 @@ export default function CreateAppointmentModal({
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "30px" }}>
           <div>
             <h2 style={{ color: "#f0f6ff", fontSize: "40px", fontWeight: 700, margin: 0 }}>
-              Create Appointment
+              {mode === "edit"
+                ? "Edit Appointment"
+                : "Create Appointment"}
             </h2>
             <p style={{ color: "#86a7c8", marginTop: "10px", marginBottom: 0 }}>
-              Schedule a new patient appointment
+              {mode === "edit"
+                ? "Update appointment details"
+                : "Schedule a new patient appointment"}
             </p>
           </div>
 
@@ -290,10 +417,42 @@ export default function CreateAppointmentModal({
           {/* Patient - zIndex 50 to prevent dropdown hiding */}
           <div className="hover-card" style={{ ...cardStyle, position: "relative", zIndex: 50 }}>
             <CardTitle icon={<UserIcon />} title="Patient" />
-            <PatientSearchSelect
-              selectedPatient={selectedPatient}
-              setSelectedPatient={setSelectedPatient}
-            />
+            {mode === "edit" ? (
+              <div
+                style={{
+                  height: "54px",
+                  borderRadius:
+                    "18px",
+                  border:
+                    "1px solid rgba(255,255,255,0.10)",
+                  background:
+                    "rgba(13, 26, 51, 0.85)",
+                  display:
+                    "flex",
+                  alignItems:
+                    "center",
+                  padding:
+                    "0 16px",
+                  color:
+                    "#f0f6ff",
+                  fontSize:
+                    "14px",
+                }}
+              >
+                {
+                  selectedPatient?.name
+                }
+              </div>
+            ) : (
+              <PatientSearchSelect
+                selectedPatient={
+                  selectedPatient
+                }
+                setSelectedPatient={
+                  setSelectedPatient
+                }
+              />
+            )}
           </div>
 
           {/* Doctor - zIndex 40 */}
@@ -471,9 +630,21 @@ export default function CreateAppointmentModal({
             }}
           >
             {submitting ? (
-              <><Loader2 size={18} />Creating...</>
+              <>
+                <Loader2
+                  size={18}
+                />
+                {mode === "edit"
+                  ? "Saving..."
+                  : "Creating..."}
+              </>
             ) : (
-              <><Plus size={18} />Create Appointment</>
+              <>
+                <Plus size={18} />
+                {mode === "edit"
+                  ? "Save Changes"
+                  : "Create Appointment"}
+              </>
             )}
           </button>
         </div>

@@ -11,7 +11,7 @@ import {
 import AppointmentStats from "@/components/appointments/AppointmentStats";
 import AppointmentTable from "@/components/appointments/AppointmentTable";
 import AppointmentFilters from "@/components/appointments/AppointmentFilters";
-import CreateAppointmentModal from "@/components/appointments/CreateAppointmentModal";
+import CreateAppointmentModal from "@/components/appointments/AppointmentFormModal";
 
 export default function AppointmentsPage() {
 	const [
