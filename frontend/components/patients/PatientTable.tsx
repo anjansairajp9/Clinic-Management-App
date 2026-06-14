@@ -28,6 +28,7 @@ import PatientRow from "./PatientRow";
 import PatientDetailsDrawer from "./PatientDetailsDrawer";
 import PatientFormModal from "./PatientFormModal";
 import PatientMedicalHistoryModal from "./PatientMedicalHistoryModal";
+import PatientAppointmentHistoryModal from "./PatientAppointmentHistoryModal";
 
 type Props = {
 	searchQuery: string;
@@ -101,6 +102,11 @@ export default function PatientTable({
 	const [
 		isMedicalHistoryModalOpen,
 		setIsMedicalHistoryModalOpen,
+	] = useState(false);
+
+	const [
+		isAppointmentHistoryModalOpen,
+		setIsAppointmentHistoryModalOpen,
 	] = useState(false);
 
 	const [
@@ -409,6 +415,10 @@ export default function PatientTable({
 				false
 			);
 
+			setIsAppointmentHistoryModalOpen(
+				false
+			);
+
 			setMedicalHistoryMessage(
 				null
 			);
@@ -635,12 +645,9 @@ export default function PatientTable({
 						true
 					);
 				}}
-				onAppointmentHistory={(
-					patient
-				) => {
-					console.log(
-						"Appointment history",
-						patient
+				onAppointmentHistory={() => {
+					setIsAppointmentHistoryModalOpen(
+						true
 					);
 				}}
 				message={
@@ -687,6 +694,24 @@ export default function PatientTable({
 				}
 				loading={
 					medicalHistoryLoading
+				}
+			/>
+
+			<PatientAppointmentHistoryModal
+				isOpen={
+					isAppointmentHistoryModalOpen
+				}
+				onClose={() =>
+					setIsAppointmentHistoryModalOpen(
+						false
+					)
+				}
+				patientId={
+					selectedPatient?.id ||
+					null
+				}
+				patientName={
+					selectedPatient?.name
 				}
 			/>
 
