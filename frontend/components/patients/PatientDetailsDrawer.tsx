@@ -18,10 +18,17 @@ type Props = {
 	onClose: () => void;
 
 	patient:
-		| PatientDetails
-		| null;
+	| PatientDetails
+	| null;
 
 	loading: boolean;
+
+	message?: {
+		type:
+		| "success"
+		| "error";
+		text: string;
+	} | null;
 
 	onEdit: (
 		patient: PatientDetails
@@ -45,6 +52,7 @@ export default function PatientDetailsDrawer({
 	onClose,
 	patient,
 	loading,
+	message,
 	onEdit,
 	onDelete,
 	onMedicalHistory,
@@ -222,6 +230,43 @@ export default function PatientDetailsDrawer({
 					</button>
 				</div>
 
+				{message && (
+					<div
+						style={{
+							padding:
+								"16px 18px",
+							borderRadius:
+								"18px",
+							marginBottom:
+								"22px",
+							background:
+								message.type ===
+									"success"
+									? "rgba(34,197,94,0.14)"
+									: "rgba(239,68,68,0.14)",
+
+							border:
+								message.type ===
+									"success"
+									? "1px solid rgba(34,197,94,0.25)"
+									: "1px solid rgba(239,68,68,0.25)",
+
+							color:
+								message.type ===
+									"success"
+									? "#86efac"
+									: "#fca5a5",
+
+							fontSize:
+								"15px",
+							fontWeight:
+								500,
+						}}
+					>
+						{message.text}
+					</div>
+				)}
+
 				{loading && (
 					<div
 						style={{
@@ -314,10 +359,10 @@ export default function PatientDetailsDrawer({
 							{/* Medical History */}
 							<Card title="Medical History">
 								{patient.medical_history &&
-								Object.keys(
-									patient.medical_history
-								)
-									.length >
+									Object.keys(
+										patient.medical_history
+									)
+										.length >
 									0 ? (
 									Object.entries(
 										patient.medical_history
@@ -348,11 +393,11 @@ export default function PatientDetailsDrawer({
 														value
 													)
 														? value.join(
-																", "
-															)
+															", "
+														)
 														: String(
-																value
-															)
+															value
+														)
 												}
 											/>
 										)
@@ -555,10 +600,10 @@ function ActionButton({
 	label: string;
 	onClick: () => void;
 	type:
-		| "primary"
-		| "success"
-		| "warning"
-		| "danger";
+	| "primary"
+	| "success"
+	| "warning"
+	| "danger";
 }) {
 	const styles = {
 		primary: {
@@ -619,7 +664,7 @@ function ActionButton({
 				transition:
 					"all 0.2s ease",
 				...styles[
-					type
+				type
 				],
 			}}
 			onMouseEnter={(

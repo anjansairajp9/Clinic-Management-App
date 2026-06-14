@@ -16,6 +16,7 @@ import {
 	searchPatients,
 	getPatientById,
 	deletePatient,
+	updateMedicalHistory
 } from "@/services/patient.service";
 
 import type {
@@ -26,6 +27,7 @@ import type {
 import PatientRow from "./PatientRow";
 import PatientDetailsDrawer from "./PatientDetailsDrawer";
 import PatientFormModal from "./PatientFormModal";
+import PatientMedicalHistoryModal from "./PatientMedicalHistoryModal";
 
 type Props = {
 	searchQuery: string;
@@ -95,6 +97,26 @@ export default function PatientTable({
 		useState<PatientDetails | null>(
 			null
 		);
+
+	const [
+		isMedicalHistoryModalOpen,
+		setIsMedicalHistoryModalOpen,
+	] = useState(false);
+
+	const [
+		medicalHistoryLoading,
+		setMedicalHistoryLoading,
+	] = useState(false);
+
+	const [
+		medicalHistoryMessage,
+		setMedicalHistoryMessage,
+	] = useState<{
+		type:
+		| "success"
+		| "error";
+		text: string;
+	} | null>(null);
 
 	const limit = 10;
 
@@ -308,10 +330,87 @@ export default function PatientTable({
 			}
 		};
 
+	const handleMedicalHistorySave =
+		async (
+			data: Record<
+				string,
+				any
+			>
+		) => {
+			if (
+				!selectedPatient
+			) {
+				return;
+			}
+
+			try {
+				setMedicalHistoryLoading(
+					true
+				);
+
+				setMedicalHistoryMessage(
+					null
+				);
+
+				await updateMedicalHistory(
+					selectedPatient.id,
+					{
+						data,
+					}
+				);
+
+				// refresh patient
+				const updatedPatient =
+					await getPatientById(
+						selectedPatient.id
+					);
+
+				setSelectedPatient(
+					updatedPatient
+				);
+
+				setMedicalHistoryMessage(
+					{
+						type:
+							"success",
+						text:
+							"Medical history updated successfully",
+					}
+				);
+
+				setIsMedicalHistoryModalOpen(
+					false
+				);
+			} catch (
+			error: any
+			) {
+				setMedicalHistoryMessage(
+					{
+						type:
+							"error",
+						text:
+							error
+								?.response
+								?.data
+								?.detail ||
+							"Failed to update medical history",
+					}
+				);
+			} finally {
+				setMedicalHistoryLoading(
+					false
+				);
+			}
+		};
+
 	const closeDrawer =
 		() => {
 			setIsDrawerOpen(
 				false
+			);
+
+			setMedicalHistoryMessage(
+				null
 			);
 
 			setLoadingDetails(
@@ -527,12 +626,13 @@ export default function PatientTable({
 				onDelete={
 					handleDelete
 				}
-				onMedicalHistory={(
-					patient
-				) => {
-					console.log(
-						"Medical history",
-						patient
+				onMedicalHistory={() => {
+					setMedicalHistoryMessage(
+						null
+					);
+
+					setIsMedicalHistoryModalOpen(
+						true
 					);
 				}}
 				onAppointmentHistory={(
@@ -543,6 +643,9 @@ export default function PatientTable({
 						patient
 					);
 				}}
+				message={
+					medicalHistoryMessage
+				}
 			/>
 
 			<PatientFormModal
@@ -564,6 +667,26 @@ export default function PatientTable({
 				mode="edit"
 				patient={
 					editingPatient
+				}
+			/>
+
+			<PatientMedicalHistoryModal
+				isOpen={
+					isMedicalHistoryModalOpen
+				}
+				onClose={() =>
+					setIsMedicalHistoryModalOpen(
+						false
+					)
+				}
+				onSave={
+					handleMedicalHistorySave
+				}
+				initialData={
+					selectedPatient?.medical_history
+				}
+				loading={
+					medicalHistoryLoading
 				}
 			/>
 
