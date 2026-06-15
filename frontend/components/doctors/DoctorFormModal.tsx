@@ -27,7 +27,7 @@ type Props = {
 	onClose: () => void;
 	onSuccess: () => void;
 
-	mode:
+	mode?:
 	| "create"
 	| "edit";
 
@@ -38,7 +38,7 @@ export default function DoctorFormModal({
 	isOpen,
 	onClose,
 	onSuccess,
-	mode,
+	mode = "create",
 	doctor,
 }: Props) {
 	const [name, setName] = useState("");
@@ -55,18 +55,47 @@ export default function DoctorFormModal({
 	const [submitHovered, setSubmitHovered] = useState(false);
 
 	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+
 		if (
 			mode === "edit" &&
 			doctor
 		) {
-			setName(doctor.name);
-			setPhone(doctor.phone.replace("+91", ""));
-			setSpecialization(doctor.specialization);
-			setNotes(doctor.notes || "");
+			setName(
+				doctor.name
+			);
+
+			setPhone(
+				doctor.phone.startsWith(
+					"+91"
+				)
+					? doctor.phone.slice(
+						3
+					)
+					: doctor.phone
+			);
+
+			setSpecialization(
+				doctor.specialization
+			);
+
+			setNotes(
+				doctor.notes ||
+				""
+			);
 		} else {
 			resetForm();
 		}
-	}, [mode, doctor, isOpen]);
+
+		setError("");
+		setSuccess("");
+	}, [
+		isOpen,
+		mode,
+		doctor,
+	]);
 
 	const resetForm = () => {
 		setName("");
@@ -194,7 +223,9 @@ export default function DoctorFormModal({
 							</h2>
 
 							<p style={subtitleStyle}>
-								Manage doctor information.
+								{mode === "edit"
+									? "Update doctor information."
+									: "Manage doctor information."}
 							</p>
 						</div>
 
