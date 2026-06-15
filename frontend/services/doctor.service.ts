@@ -102,10 +102,10 @@ export const deleteDoctor =
 	};
 
 /* -------------------------------- */
-/* DOCTOR APPOINTMENTS */
+/* DOCTOR APPOINTMENT HISTORY */
 /* -------------------------------- */
 
-export const getDoctorAppointments =
+export const getDoctorAppointmentHistory =
 	async (
 		doctorId: number,
 		{

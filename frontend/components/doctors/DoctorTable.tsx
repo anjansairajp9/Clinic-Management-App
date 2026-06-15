@@ -26,6 +26,7 @@ import type {
 import DoctorRow from "./DoctorRow";
 import DoctorDetailsDrawer from "./DoctorDetailsDrawer";
 import DoctorFormModal from "./DoctorFormModal";
+import DoctorAppointmentHistoryModal from "./DoctorAppointmentHistoryModal";
 
 type Props = {
 	searchQuery: string;
@@ -74,6 +75,19 @@ export default function DoctorTable({
 	const [
 		editingDoctor,
 		setEditingDoctor,
+	] =
+		useState<DoctorDetails | null>(
+			null
+		);
+
+	const [
+		isAppointmentModalOpen,
+		setIsAppointmentModalOpen,
+	] = useState(false);
+
+	const [
+		selectedDoctorForAppointments,
+		setSelectedDoctorForAppointments,
 	] =
 		useState<DoctorDetails | null>(
 			null
@@ -541,9 +555,16 @@ export default function DoctorTable({
 					onAppointmentHistory={(
 						doctor
 					) => {
-						console.log(
-							"Doctor appointments",
+						setSelectedDoctorForAppointments(
 							doctor
+						);
+
+						setIsDrawerOpen(
+							false
+						);
+
+						setIsAppointmentModalOpen(
+							true
 						);
 					}}
 				/>
@@ -568,6 +589,28 @@ export default function DoctorTable({
 				mode="edit"
 				doctor={
 					editingDoctor
+				}
+			/>
+
+			<DoctorAppointmentHistoryModal
+				isOpen={
+					isAppointmentModalOpen
+				}
+				onClose={() => {
+					setIsAppointmentModalOpen(
+						false
+					);
+
+					setSelectedDoctorForAppointments(
+						null
+					);
+				}}
+				doctorId={
+					selectedDoctorForAppointments?.id ??
+					null
+				}
+				doctorName={
+					selectedDoctorForAppointments?.name
 				}
 			/>
 

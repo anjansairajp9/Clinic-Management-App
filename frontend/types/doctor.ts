@@ -16,7 +16,7 @@ export interface DoctorDetails {
 	updated_at: string;
 }
 
-export interface DoctorAppointment {
+export interface DoctorAppointmentHistory {
 	id: number;
 
 	patient_name: string;
@@ -45,8 +45,6 @@ export interface DoctorAppointment {
 	notes:
 	| string
 	| null;
-
-	total_amount: number;
 
 	created_at: string;
 	updated_at: string;
