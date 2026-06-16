@@ -68,7 +68,7 @@ export const getAppointments =
 
 type SearchAppointmentsParams =
 	{
-		query: string;
+		query?: string;
 		page?: number;
 		limit?: number;
 		status?: string;
@@ -88,7 +88,7 @@ export const searchAppointments =
 				"/appointments/search",
 				{
 					params: {
-						query,
+						query: query || null,
 						page,
 						limit,
 						status,

@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import TreatmentTable from "@/components/treatments/TreatmentTable";
+import TreatmentFormModal from "@/components/treatments/TreatmentFormModal";
 
 export default function TreatmentsPage() {
 	const [
@@ -21,6 +22,11 @@ export default function TreatmentsPage() {
 		refreshKey,
 		setRefreshKey,
 	] = useState(0);
+
+	const [
+		isCreateModalOpen,
+		setIsCreateModalOpen,
+	] = useState(false);
 
 	return (
 		<div
@@ -77,6 +83,11 @@ export default function TreatmentsPage() {
 				</div>
 
 				<button
+					onClick={() =>
+						setIsCreateModalOpen(
+							true
+						)
+					}
 					style={
 						createButton
 					}
@@ -172,6 +183,28 @@ export default function TreatmentsPage() {
 				refreshKey={
 					refreshKey
 				}
+			/>
+
+			<TreatmentFormModal
+				isOpen={
+					isCreateModalOpen
+				}
+				onClose={() =>
+					setIsCreateModalOpen(
+						false
+					)
+				}
+				onSuccess={() => {
+					setRefreshKey(
+						(prev) =>
+							prev + 1
+					);
+
+					setIsCreateModalOpen(
+						false
+					);
+				}}
+				mode="create"
 			/>
 		</div>
 	);

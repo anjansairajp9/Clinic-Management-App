@@ -104,3 +104,24 @@ export interface CreateAppointmentResponse {
 	notes: string | null;
 	created_at: string;
 }
+
+
+export type AppointmentSearchResult = {
+	id: number;
+
+	patient_id: number;
+	patient_name: string;
+	patient_age: number;
+	patient_phone: string;
+
+	doctor_id: number;
+	doctor_name: string;
+	doctor_phone: string;
+
+	appointment_type: string;
+	appointment_time: string;
+	status: string;
+
+	complaint?: string;
+	notes?: string;
+};
