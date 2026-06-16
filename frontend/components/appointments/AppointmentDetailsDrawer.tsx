@@ -40,6 +40,10 @@ type Props = {
       | "cancelled"
       | "no_show"
   ) => void;
+
+  onViewTreatment: (
+    appointmentId: number
+  ) => void;
 };
 
 export default function AppointmentDetailsDrawer({
@@ -50,6 +54,7 @@ export default function AppointmentDetailsDrawer({
   onEdit,
   onDelete,
   onStatusUpdate,
+  onViewTreatment,
 }: Props) {
   if (!isOpen) {
     return null;
@@ -459,6 +464,17 @@ export default function AppointmentDetailsDrawer({
                         "1px solid rgba(255,255,255,0.06)",
                     }}
                   >
+
+                    <ActionButton
+                      label="View Treatment"
+                      type="treatment"
+                      onClick={() =>
+                        onViewTreatment(
+                          appointment.id
+                        )
+                      }
+                    />
+
                     <ActionButton
                       label="Edit Appointment"
                       type="primary"
@@ -563,10 +579,18 @@ function ActionButton({
   label,
   onClick,
   type,
-}: any) {
+}: {
+  label: string;
+  onClick: () => void;
+  type:
+  | "success"
+  | "primary"
+  | "warning"
+  | "danger"
+  | "treatment";
+}) {
   const [isHovered, setIsHovered] = useState(false);
 
-  // Set color themes based on button type
   let colors = {
     bg: "rgba(255,255,255,0.04)",
     border: "rgba(255,255,255,0.08)",
@@ -598,6 +622,22 @@ function ActionButton({
       text: "#f87171",
       hoverBg: "rgba(239, 68, 68, 0.18)",
       hoverBorder: "rgba(239, 68, 68, 0.35)",
+    };
+  } else if (
+    type ===
+    "treatment"
+  ) {
+    colors = {
+      bg: "rgba(14,165,233,0.1)",
+      border:
+        "rgba(14,165,233,0.2)",
+      text: "#38bdf8",
+
+      hoverBg:
+        "rgba(14,165,233,0.18)",
+
+      hoverBorder:
+        "rgba(14,165,233,0.35)",
     };
   } else if (type === "primary") {
     colors = {

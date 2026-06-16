@@ -21,6 +21,10 @@ import {
 } from "@/services/appointment.service";
 
 import {
+	getTreatmentByAppointmentId,
+} from "@/services/treatment.service";
+
+import {
 	useDashboardDate,
 } from "@/hooks/useDashboardDate";
 
@@ -29,9 +33,14 @@ import type {
 	AppointmentDetails,
 } from "@/types/appointment";
 
+import type {
+	TreatmentDetails,
+} from "@/types/treatment";
+
 import AppointmentRow from "./AppointmentRow";
 import AppointmentDetailsDrawer from "./AppointmentDetailsDrawer";
 import AppointmentFormModal from "./AppointmentFormModal";
+import AppointmentTreatmentModal from "./AppointmentTreatmentModal";
 
 type Props = {
 	searchQuery: string;
@@ -96,6 +105,23 @@ export default function AppointmentTable({
 	const [
 		isEditModalOpen,
 		setIsEditModalOpen,
+	] = useState(false);
+
+	const [
+		isTreatmentModalOpen,
+		setIsTreatmentModalOpen,
+	] = useState(false);
+
+	const [
+		selectedTreatment,
+		setSelectedTreatment,
+	] = useState<TreatmentDetails | null>(
+		null
+	);
+
+	const [
+		treatmentLoading,
+		setTreatmentLoading,
 	] = useState(false);
 
 	const [
@@ -378,6 +404,47 @@ export default function AppointmentTable({
 			) {
 				console.error(
 					error
+				);
+			}
+		};
+
+	const handleViewTreatment =
+		async (
+			appointmentId: number
+		) => {
+			try {
+				setTreatmentLoading(
+					true
+				);
+
+				setIsTreatmentModalOpen(
+					true
+				);
+
+				const response =
+					await getTreatmentByAppointmentId(
+						appointmentId
+					);
+
+				setSelectedTreatment(
+					response
+				);
+			} catch (
+			error: any
+			) {
+				toast.error(
+					error?.response
+						?.data
+						?.detail ||
+					"Treatment not found"
+				);
+
+				setIsTreatmentModalOpen(
+					false
+				);
+			} finally {
+				setTreatmentLoading(
+					false
 				);
 			}
 		};
@@ -675,6 +742,9 @@ export default function AppointmentTable({
 				onEdit={
 					handleEdit
 				}
+				onViewTreatment={
+					handleViewTreatment
+				}
 				onDelete={(
 					appointmentId
 				) => {
@@ -707,6 +777,29 @@ export default function AppointmentTable({
 				mode="edit"
 				appointment={
 					editingAppointment
+				}
+			/>
+
+			<AppointmentTreatmentModal
+				isOpen={
+					isTreatmentModalOpen
+				}
+				onClose={() => {
+					setIsTreatmentModalOpen(
+						false
+					);
+
+					setTimeout(() => {
+						setSelectedTreatment(
+							null
+						);
+					}, 250);
+				}}
+				treatment={
+					selectedTreatment
+				}
+				loading={
+					treatmentLoading
 				}
 			/>
 
