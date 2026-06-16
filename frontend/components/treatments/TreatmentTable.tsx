@@ -772,14 +772,6 @@ export default function TreatmentTable({
 						treatmentId
 					);
 				}}
-				onFiles={(
-					treatment: TreatmentDetails
-				) => {
-					console.log(
-						"Treatment files",
-						treatment
-					);
-				}}
 			/>
 
 			<TreatmentFormModal

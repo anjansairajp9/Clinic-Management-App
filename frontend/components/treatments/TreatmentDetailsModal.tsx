@@ -12,8 +12,9 @@ import {
   Calendar,
   Pencil,
   Trash2,
-  Files,
 } from "lucide-react";
+
+import TreatmentFilesSection from "@/components/treatments/TreatmentFilesSection";
 
 import type {
   TreatmentDetails,
@@ -34,10 +35,6 @@ type Props = {
   onDelete: (
     treatmentId: number
   ) => void;
-
-  onFiles: (
-    treatment: TreatmentDetails
-  ) => void;
 };
 
 export default function TreatmentDetailsModal({
@@ -47,7 +44,6 @@ export default function TreatmentDetailsModal({
   loading,
   onEdit,
   onDelete,
-  onFiles,
 }: Props) {
   const [closeHovered, setCloseHovered] = useState(false);
 
@@ -222,6 +218,14 @@ export default function TreatmentDetailsModal({
                   </div>
                 </div>
 
+                {treatment && (
+                  <TreatmentFilesSection
+                    treatmentId={
+                      treatment.id
+                    }
+                  />
+                )}
+
                 {/* Actions */}
                 <div style={actionContainer}>
                   <ActionButton
@@ -229,13 +233,6 @@ export default function TreatmentDetailsModal({
                     label="Edit Treatment"
                     styleType="blue"
                     onClick={() => onEdit(treatment)}
-                  />
-
-                  <ActionButton
-                    icon={<Files size={18} />}
-                    label="Treatment Files"
-                    styleType="cyan"
-                    onClick={() => onFiles(treatment)}
                   />
 
                   <ActionButton
@@ -345,14 +342,6 @@ function ActionButton({ icon, label, styleType, onClick }: any) {
       hoverBorder: "rgba(59,130,246,0.4)",
       shadow: "rgba(59,130,246,0.2)",
     },
-    cyan: {
-      baseBg: "rgba(34,211,238,0.08)",
-      baseBorder: "rgba(34,211,238,0.25)",
-      textColor: "#22d3ee",
-      hoverBg: "rgba(34,211,238,0.15)",
-      hoverBorder: "rgba(34,211,238,0.4)",
-      shadow: "rgba(34,211,238,0.2)",
-    },
     red: {
       baseBg: "rgba(239,68,68,0.08)",
       baseBorder: "rgba(239,68,68,0.25)",
@@ -418,6 +407,7 @@ const modalStyle = {
   background: "linear-gradient(180deg, rgba(5,15,35,0.98), rgba(2,8,23,0.98))",
   border: "1px solid rgba(255,255,255,0.08)",
   boxShadow: "0 40px 120px rgba(0,0,0,0.65)",
+  overflowY: "auto" as const,
 };
 
 const headerStyle = {
@@ -432,9 +422,9 @@ const scrollableContentStyle = {
   flex: 1,
   minHeight: 0,
   overflowY: "auto" as const,
-  paddingRight: "8px", 
-  WebkitOverflowScrolling: "touch" as const, 
-  overscrollBehavior: "contain" as const,    
+  paddingRight: "8px",
+  WebkitOverflowScrolling: "touch" as const,
+  overscrollBehavior: "contain" as const,
   display: "flex",
   flexDirection: "column" as const,
   gap: "28px",
@@ -452,7 +442,6 @@ const closeButton = {
   flexShrink: 0,
 };
 
-// Updated Grid Style for 3 columns!
 const gridStyle = {
   display: "grid",
   gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
