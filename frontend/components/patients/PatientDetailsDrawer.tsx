@@ -45,6 +45,10 @@ type Props = {
 	onAppointmentHistory: (
 		patient: PatientDetails
 	) => void;
+
+	onTreatmentHistory: (
+		patient: PatientDetails
+	) => void;
 };
 
 export default function PatientDetailsDrawer({
@@ -57,6 +61,7 @@ export default function PatientDetailsDrawer({
 	onDelete,
 	onMedicalHistory,
 	onAppointmentHistory,
+	onTreatmentHistory,
 }: Props) {
 	if (!isOpen) {
 		return null;
@@ -483,6 +488,16 @@ export default function PatientDetailsDrawer({
 								/>
 
 								<ActionButton
+									label="Treatment History"
+									type="treatment"
+									onClick={() =>
+										onTreatmentHistory(
+											patient
+										)
+									}
+								/>
+
+								<ActionButton
 									label="Delete Patient"
 									type="danger"
 									onClick={() =>
@@ -603,7 +618,8 @@ function ActionButton({
 	| "primary"
 	| "success"
 	| "warning"
-	| "danger";
+	| "danger"
+	| "treatment";
 }) {
 	const styles = {
 		primary: {
@@ -631,6 +647,17 @@ function ActionButton({
 				"1px solid rgba(245,158,11,0.18)",
 			color:
 				"#f59e0b",
+		},
+
+		treatment: {
+			background:
+				"rgba(168,85,247,0.08)",
+
+			border:
+				"1px solid rgba(168,85,247,0.18)",
+
+			color:
+				"#c084fc",
 		},
 
 		danger: {

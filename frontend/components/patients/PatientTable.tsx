@@ -29,6 +29,7 @@ import PatientDetailsDrawer from "./PatientDetailsDrawer";
 import PatientFormModal from "./PatientFormModal";
 import PatientMedicalHistoryModal from "./PatientMedicalHistoryModal";
 import PatientAppointmentHistoryModal from "./PatientAppointmentHistoryModal";
+import PatientTreatmentHistoryModal from "./PatientTreatmentHistoryModal";
 
 type Props = {
 	searchQuery: string;
@@ -123,6 +124,11 @@ export default function PatientTable({
 		| "error";
 		text: string;
 	} | null>(null);
+
+	const [
+		isTreatmentHistoryModalOpen,
+		setIsTreatmentHistoryModalOpen,
+	] = useState(false);
 
 	const limit = 10;
 
@@ -650,6 +656,11 @@ export default function PatientTable({
 						true
 					);
 				}}
+				onTreatmentHistory={() => {
+					setIsTreatmentHistoryModalOpen(
+						true
+					);
+				}}
 				message={
 					medicalHistoryMessage
 				}
@@ -703,6 +714,24 @@ export default function PatientTable({
 				}
 				onClose={() =>
 					setIsAppointmentHistoryModalOpen(
+						false
+					)
+				}
+				patientId={
+					selectedPatient?.id ||
+					null
+				}
+				patientName={
+					selectedPatient?.name
+				}
+			/>
+
+			<PatientTreatmentHistoryModal
+				isOpen={
+					isTreatmentHistoryModalOpen
+				}
+				onClose={() =>
+					setIsTreatmentHistoryModalOpen(
 						false
 					)
 				}
