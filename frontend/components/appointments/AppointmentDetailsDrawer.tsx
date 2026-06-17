@@ -44,6 +44,8 @@ type Props = {
   onViewTreatment: (
     appointmentId: number
   ) => void;
+
+  onViewPayment: (appointmentId: number) => void;
 };
 
 export default function AppointmentDetailsDrawer({
@@ -55,6 +57,7 @@ export default function AppointmentDetailsDrawer({
   onDelete,
   onStatusUpdate,
   onViewTreatment,
+  onViewPayment,
 }: Props) {
   if (!isOpen) {
     return null;
@@ -473,6 +476,12 @@ export default function AppointmentDetailsDrawer({
                           appointment.id
                         )
                       }
+                    />
+
+                    <ActionButton
+                      label="View Payment"
+                      type="success"
+                      onClick={() => onViewPayment(appointment.id)}
                     />
 
                     <ActionButton

@@ -41,6 +41,9 @@ import AppointmentRow from "./AppointmentRow";
 import AppointmentDetailsDrawer from "./AppointmentDetailsDrawer";
 import AppointmentFormModal from "./AppointmentFormModal";
 import AppointmentTreatmentModal from "./AppointmentTreatmentModal";
+import { getPaymentByAppointmentId } from "@/services/payment.service";
+import type { PaymentDetails } from "@/types/payment";
+import AppointmentPaymentModal from "./AppointmentPaymentModal";
 
 type Props = {
 	searchQuery: string;
@@ -131,6 +134,10 @@ export default function AppointmentTable({
 		useState<AppointmentDetails | null>(
 			null
 		);
+
+	const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+	const [selectedPayment, setSelectedPayment] = useState<PaymentDetails | null>(null);
+	const [paymentLoading, setPaymentLoading] = useState(false);
 
 	const limit = 10;
 
@@ -449,6 +456,23 @@ export default function AppointmentTable({
 			}
 		};
 
+	const handleViewPayment = async (appointmentId: number) => {
+		try {
+			setPaymentLoading(true);
+			setIsPaymentModalOpen(true);
+
+			const response = await getPaymentByAppointmentId(appointmentId);
+			setSelectedPayment(response);
+		} catch (error: any) {
+			toast.error(
+				error?.response?.data?.detail || "Payment not found for this appointment"
+			);
+			setIsPaymentModalOpen(false); // Close if not found
+		} finally {
+			setPaymentLoading(false);
+		}
+	};
+
 	const handleDelete =
 		async (
 			appointmentId: number
@@ -745,6 +769,7 @@ export default function AppointmentTable({
 				onViewTreatment={
 					handleViewTreatment
 				}
+				onViewPayment={handleViewPayment}
 				onDelete={(
 					appointmentId
 				) => {
@@ -801,6 +826,18 @@ export default function AppointmentTable({
 				loading={
 					treatmentLoading
 				}
+			/>
+
+			<AppointmentPaymentModal
+				isOpen={isPaymentModalOpen}
+				onClose={() => {
+					setIsPaymentModalOpen(false);
+					setTimeout(() => {
+						setSelectedPayment(null);
+					}, 250);
+				}}
+				payment={selectedPayment}
+				loading={paymentLoading}
 			/>
 
 			{isDeleteModalOpen && (
