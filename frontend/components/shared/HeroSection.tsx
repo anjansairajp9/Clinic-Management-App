@@ -1,9 +1,11 @@
+"use client";
+
 export default function HeroSection() {
   return (
     <section
       style={{
-        paddingTop: "96px", // increased top spacing
-        paddingBottom: "0px",
+        paddingTop: "105px",
+        paddingBottom: "32px",
         display: "flex",
         justifyContent: "center",
       }}
@@ -11,7 +13,7 @@ export default function HeroSection() {
       <div
         style={{
           width: "100%",
-          maxWidth: "760px",
+          maxWidth: "960px",
           textAlign: "center",
           padding: "0 20px",
         }}
@@ -26,7 +28,7 @@ export default function HeroSection() {
             borderRadius: "999px",
             background: "rgba(56,189,248,0.08)",
             border: "1px solid rgba(56,189,248,0.15)",
-            marginBottom: "18px",
+            marginBottom: "16px",
           }}
         >
           <div
@@ -53,12 +55,12 @@ export default function HeroSection() {
         {/* Heading */}
         <h1
           style={{
-            fontSize: "clamp(42px, 4vw, 54px)",
-            lineHeight: 1.02,
+            fontSize: "clamp(42px, 4.5vw, 60px)",
+            lineHeight: 1.05,
             fontWeight: 700,
             color: "#f0f6ff",
             letterSpacing: "-0.04em",
-            marginBottom: "14px",
+            marginBottom: "12px",
             overflow: "visible",
             paddingBottom: "6px",
           }}
@@ -83,10 +85,10 @@ export default function HeroSection() {
         {/* Description */}
         <p
           style={{
-            fontSize: "16px", // bigger
-            lineHeight: 1.85,
+            fontSize: "18px",
+            lineHeight: 1.6,
             color: "#7a9ab8",
-            maxWidth: "650px",
+            maxWidth: "840px",
             margin: "0 auto",
           }}
         >

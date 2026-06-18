@@ -77,10 +77,8 @@ function FeatureCard({
           : "1px solid rgba(255,255,255,0.07)",
 
         borderRadius: "18px",
-
-        // SMALLER CARD
-        padding: "16px",
-        minHeight: "128px",
+        padding: "18px 20px",
+        minHeight: "115px",
 
         display: "flex",
         flexDirection: "column",
@@ -99,16 +97,15 @@ function FeatureCard({
     >
       <div
         style={{
-          // SMALLER ICON BOX
-          width: "38px",
-          height: "38px",
-          borderRadius: "12px",
+          width: "36px",
+          height: "36px",
+          borderRadius: "10px",
           background: `${feature.accent}14`,
           border: `1px solid ${feature.accent}25`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          marginBottom: "10px",
+          marginBottom: "12px",
 
           boxShadow: hovered
             ? `0 0 18px ${feature.accent}25`
@@ -118,7 +115,7 @@ function FeatureCard({
         }}
       >
         <Icon
-          size={18}
+          size={16}
           color={feature.accent}
         />
       </div>
@@ -128,7 +125,7 @@ function FeatureCard({
           fontSize: "15px",
           fontWeight: 700,
           color: "#f0f6ff",
-          marginBottom: "8px",
+          marginBottom: "6px",
         }}
       >
         {feature.title}
@@ -137,7 +134,7 @@ function FeatureCard({
       <p
         style={{
           fontSize: "13px",
-          lineHeight: 1.6,
+          lineHeight: 1.5,
           color: "#7a9ab8",
         }}
       >
@@ -151,29 +148,29 @@ export default function FeaturesSection() {
   return (
     <section
       style={{
-        paddingBottom: "24px",
+        paddingBottom: "32px",
       }}
     >
       <div
         style={{
           width: "100%",
-          maxWidth: "1080px",
+          maxWidth: "1140px", // Kept wide so cards stretch out naturally
           margin: "0 auto",
-          padding: "0 20px",
+          padding: "0 24px",
         }}
       >
         <div
           style={{
             textAlign: "center",
-            marginBottom: "18px",
+            marginBottom: "24px",
           }}
         >
           <h2
             style={{
-              fontSize: "42px",
+              fontSize: "36px",
               fontWeight: 700,
               color: "#f0f6ff",
-              marginBottom: "10px",
+              marginBottom: "6px",
             }}
           >
             Everything your clinic needs
@@ -194,7 +191,7 @@ export default function FeaturesSection() {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "12px",
+            gap: "20px",
           }}
         >
           {features.map((feature) => (
