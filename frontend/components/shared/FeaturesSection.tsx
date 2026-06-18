@@ -1,5 +1,7 @@
 "use client";
 
+import { useMobile } from "@/hooks/useMobile";
+
 import {
   Calendar,
   CreditCard,
@@ -145,6 +147,8 @@ function FeatureCard({
 }
 
 export default function FeaturesSection() {
+  const isMobile = useMobile();
+
   return (
     <section
       style={{
@@ -154,7 +158,7 @@ export default function FeaturesSection() {
       <div
         style={{
           width: "100%",
-          maxWidth: "1140px", // Kept wide so cards stretch out naturally
+          maxWidth: "1140px",
           margin: "0 auto",
           padding: "0 24px",
         }}
@@ -167,7 +171,7 @@ export default function FeaturesSection() {
         >
           <h2
             style={{
-              fontSize: "36px",
+              fontSize: isMobile ? "28px" : "36px",
               fontWeight: 700,
               color: "#f0f6ff",
               marginBottom: "6px",
@@ -190,7 +194,7 @@ export default function FeaturesSection() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
+            gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
             gap: "20px",
           }}
         >

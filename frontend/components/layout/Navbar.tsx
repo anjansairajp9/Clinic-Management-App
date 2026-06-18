@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useMobile } from "@/hooks/useMobile"; // Added hook
 
 export default function Navbar() {
   const [loginHovered, setLoginHovered] = useState(false);
   const [startHovered, setStartHovered] = useState(false);
+  const isMobile = useMobile(); // Initialize hook
 
   return (
     <header
@@ -30,7 +32,7 @@ export default function Navbar() {
             maxWidth: "1320px",
             margin: "0 auto",
             padding: "0 18px",
-            height: "66px", 
+            height: "66px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -44,7 +46,7 @@ export default function Navbar() {
               alignItems: "center",
               gap: "12px",
               textDecoration: "none",
-              transform: "translateX(-4px)", 
+              transform: "translateX(-4px)",
             }}
           >
             {/* Logo */}
@@ -61,27 +63,29 @@ export default function Navbar() {
                 fontSize: "15px",
                 fontWeight: 700,
                 color: "#07111f",
-                boxShadow:
-                  "0 0 22px rgba(56,189,248,0.18)",
+                boxShadow: "0 0 22px rgba(56,189,248,0.18)",
                 transition: "transform 0.2s ease",
               }}
             >
               CM
             </div>
 
-            {/* Brand */}
-            <div>
-              <h1
-                style={{
-                  fontSize: "17px",
-                  fontWeight: 700,
-                  color: "#f0f6ff",
-                  marginBottom: "2px",
-                }}
-              >
-                Clinic Management
-              </h1>
-            </div>
+            {/* Brand - Hidden on mobile */}
+            {!isMobile && (
+              <div>
+                <h1
+                  style={{
+                    fontSize: "17px",
+                    fontWeight: 700,
+                    color: "#f0f6ff",
+                    marginBottom: "2px",
+                    whiteSpace: "nowrap", // Ensure title doesn't break
+                  }}
+                >
+                  Clinic Management
+                </h1>
+              </div>
+            )}
           </Link>
 
           {/* RIGHT SIDE */}
@@ -89,29 +93,24 @@ export default function Navbar() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "10px",
-              transform: "translateX(4px)", // tiny right move
+              gap: isMobile ? "8px" : "10px", // Tighter gap on mobile
+              transform: "translateX(4px)",
             }}
           >
             {/* Login Button */}
             <Link
               href="/login"
-              onMouseEnter={() =>
-                setLoginHovered(true)
-              }
-              onMouseLeave={() =>
-                setLoginHovered(false)
-              }
+              onMouseEnter={() => setLoginHovered(true)}
+              onMouseLeave={() => setLoginHovered(false)}
               style={{
-                padding: "10px 20px",
+                padding: isMobile ? "8px 14px" : "10px 20px", // Less padding on mobile
                 borderRadius: "14px",
-                fontSize: "14px",
+                fontSize: isMobile ? "13px" : "14px", // Smaller font
                 fontWeight: 500,
                 textDecoration: "none",
+                whiteSpace: "nowrap", // Prevent text wrap
 
-                color: loginHovered
-                  ? "#f0f6ff"
-                  : "#94a3b8",
+                color: loginHovered ? "#f0f6ff" : "#94a3b8",
 
                 background: loginHovered
                   ? "rgba(255,255,255,0.05)"
@@ -135,24 +134,19 @@ export default function Navbar() {
             {/* Get Started Button */}
             <Link
               href="/register"
-              onMouseEnter={() =>
-                setStartHovered(true)
-              }
-              onMouseLeave={() =>
-                setStartHovered(false)
-              }
+              onMouseEnter={() => setStartHovered(true)}
+              onMouseLeave={() => setStartHovered(false)}
               style={{
-                padding: "10px 24px",
+                padding: isMobile ? "8px 16px" : "10px 24px", // Less padding on mobile
                 borderRadius: "14px",
-                fontSize: "14px",
+                fontSize: isMobile ? "13px" : "14px", // Smaller font
                 fontWeight: 700,
                 textDecoration: "none",
+                whiteSpace: "nowrap", // Prevent text wrap
 
                 color: "#07111f",
 
-                background: startHovered
-                  ? "#67d4ff"
-                  : "#38bdf8",
+                background: startHovered ? "#67d4ff" : "#38bdf8",
 
                 boxShadow: startHovered
                   ? "0 10px 30px rgba(56,189,248,0.32)"

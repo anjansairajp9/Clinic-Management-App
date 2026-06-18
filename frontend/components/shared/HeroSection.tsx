@@ -1,10 +1,14 @@
 "use client";
 
+import { useMobile } from "@/hooks/useMobile";
+
 export default function HeroSection() {
+  const isMobile = useMobile();
+
   return (
     <section
       style={{
-        paddingTop: "105px",
+        paddingTop: isMobile ? "100px" : "105px",
         paddingBottom: "32px",
         display: "flex",
         justifyContent: "center",
@@ -55,7 +59,7 @@ export default function HeroSection() {
         {/* Heading */}
         <h1
           style={{
-            fontSize: "clamp(42px, 4.5vw, 60px)",
+            fontSize: isMobile ? "36px" : "clamp(42px, 4.5vw, 60px)",
             lineHeight: 1.05,
             fontWeight: 700,
             color: "#f0f6ff",
@@ -85,7 +89,7 @@ export default function HeroSection() {
         {/* Description */}
         <p
           style={{
-            fontSize: "18px",
+            fontSize: isMobile ? "16px" : "18px",
             lineHeight: 1.6,
             color: "#7a9ab8",
             maxWidth: "840px",
