@@ -1,5 +1,7 @@
 "use client";
 
+import { useMobile } from "@/hooks/useMobile"; // Import the hook
+
 type AuthLayoutProps = {
 	title: string;
 	subtitle: string;
@@ -11,12 +13,15 @@ export default function AuthLayout({
 	subtitle,
 	children,
 }: AuthLayoutProps) {
+	const isMobile = useMobile(); // Initialize the hook
+
 	return (
 		<main
 			style={{
 				minHeight: "100vh",
-				display: "grid",
-				gridTemplateColumns: "1.15fr 0.85fr",
+				display: isMobile ? "flex" : "grid", // Stack vertically on mobile
+				flexDirection: isMobile ? "column" : undefined,
+				gridTemplateColumns: isMobile ? "1fr" : "1.15fr 0.85fr", // Single column on mobile
 
 				background:
 					"linear-gradient(to right, #050d17 0%, #07111d 100%)",
@@ -30,7 +35,7 @@ export default function AuthLayout({
 			<section
 				style={{
 					position: "relative",
-					padding: "52px 80px",
+					padding: isMobile ? "100px 24px 40px" : "52px 80px", // Adjust padding to clear logo on mobile
 					display: "flex",
 					flexDirection: "column",
 					justifyContent: "center",
@@ -62,8 +67,8 @@ export default function AuthLayout({
 				<div
 					style={{
 						position: "absolute",
-						top: "48px",
-						left: "48px",
+						top: isMobile ? "24px" : "48px", // Move logo up on mobile
+						left: isMobile ? "24px" : "48px",
 						display: "flex",
 						alignItems: "center",
 						gap: "14px",
@@ -82,8 +87,7 @@ export default function AuthLayout({
 							fontSize: "20px",
 							fontWeight: 700,
 							color: "#031018",
-							boxShadow:
-								"0 0 24px rgba(56,189,248,0.22)",
+							boxShadow: "0 0 24px rgba(56,189,248,0.22)",
 						}}
 					>
 						CM
@@ -91,7 +95,7 @@ export default function AuthLayout({
 
 					<h2
 						style={{
-							fontSize: "26px",
+							fontSize: isMobile ? "20px" : "26px", // Smaller logo text
 							fontWeight: 700,
 							color: "#f0f6ff",
 						}}
@@ -113,10 +117,8 @@ export default function AuthLayout({
 							gap: "8px",
 							padding: "10px 18px",
 							borderRadius: "999px",
-							background:
-								"rgba(56,189,248,0.07)",
-							border:
-								"1px solid rgba(56,189,248,0.14)",
+							background: "rgba(56,189,248,0.07)",
+							border: "1px solid rgba(56,189,248,0.14)",
 							marginBottom: "28px",
 						}}
 					>
@@ -143,8 +145,8 @@ export default function AuthLayout({
 
 					<h1
 						style={{
-							fontSize: "84px",
-							lineHeight: 0.95,
+							fontSize: isMobile ? "46px" : "84px", // Dramatically shrink massive heading
+							lineHeight: isMobile ? 1.05 : 0.95,
 							fontWeight: 700,
 							color: "#f0f6ff",
 							marginBottom: "26px",
@@ -155,15 +157,12 @@ export default function AuthLayout({
 						clinic{" "}
 						<span
 							style={{
-								fontFamily:
-									"var(--font-display)",
+								fontFamily: "var(--font-display)",
 								fontStyle: "italic",
 								background:
 									"linear-gradient(90deg,#38bdf8,#2dd4bf)",
-								WebkitBackgroundClip:
-									"text",
-								WebkitTextFillColor:
-									"transparent",
+								WebkitBackgroundClip: "text",
+								WebkitTextFillColor: "transparent",
 							}}
 						>
 							effortlessly
@@ -172,24 +171,23 @@ export default function AuthLayout({
 
 					<p
 						style={{
-							fontSize: "20px",
-							lineHeight: 1.8,
+							fontSize: isMobile ? "16px" : "20px", // Shrink subtitle
+							lineHeight: 1.6,
 							color: "#7a9ab8",
 							maxWidth: "650px",
 						}}
 					>
-						Patients, doctors,
-						appointments, treatments,
-						payments — everything in one
-						modern platform built for
+						Patients, doctors, appointments, treatments,
+						payments — everything in one modern platform built for
 						healthcare teams.
 					</p>
 				</div>
 			</section>
 
-			{/* DIVIDER */}
+			{/* DIVIDER - Hide entirely on mobile so it doesn't cross the stacked layout */}
 			<div
 				style={{
+					display: isMobile ? "none" : "block", // Hidden on mobile
 					position: "absolute",
 					left: "67%",
 					top: 0,
@@ -223,13 +221,13 @@ export default function AuthLayout({
 					background:
 						"linear-gradient(to left, rgba(4,10,18,1), rgba(7,14,24,0.98))",
 
-					boxShadow:
-						"inset 18px 0 40px rgba(0,0,0,0.16)",
+					boxShadow: isMobile ? "none" : "inset 18px 0 40px rgba(0,0,0,0.16)", // Remove inner shadow on mobile
 
 					backdropFilter: "blur(4px)",
 					WebkitBackdropFilter: "blur(4px)",
 
-					padding: "60px",
+					padding: isMobile ? "40px 24px 60px" : "60px", // Standardize padding for small screens
+					borderTop: isMobile ? "1px solid rgba(255,255,255,0.05)" : "none", // Add subtle visual separator
 				}}
 			>
 				<div
@@ -240,7 +238,7 @@ export default function AuthLayout({
 				>
 					<h1
 						style={{
-							fontSize: "56px",
+							fontSize: isMobile ? "36px" : "56px", // Shrink form title
 							fontWeight: 700,
 							color: "#f0f6ff",
 							marginBottom: "16px",
@@ -254,8 +252,8 @@ export default function AuthLayout({
 					<p
 						style={{
 							color: "#7a9ab8",
-							fontSize: "16px",
-							lineHeight: 1.8,
+							fontSize: isMobile ? "15px" : "16px",
+							lineHeight: 1.6,
 							marginBottom: "38px",
 						}}
 					>
