@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
-
+import { useEffect, useState } from "react";
 import {
   Building2,
   Users,
@@ -15,52 +11,43 @@ import {
   Clock3,
 } from "lucide-react";
 
-import {
-  getSuperAdminDashboard,
-} from "@/services/super-admin.service";
-
-import {
-  useDashboardDate,
-} from "@/hooks/useDashboardDate";
-
-import type {
-  SuperAdminDashboard,
-} from "@/types/super-admin";
+import { getSuperAdminDashboard } from "@/services/super-admin.service";
+import { useDashboardDate } from "@/hooks/useDashboardDate";
+import type { SuperAdminDashboard } from "@/types/super-admin";
+import { useMobile } from "@/hooks/useMobile";
 
 export default function SuperAdminDashboardPage() {
-  const {
-    selectedDate,
-  } = useDashboardDate();
+  const isMobile = useMobile();
+  const [mounted, setMounted] = useState(false);
 
-  const [
-    dashboard,
-    setDashboard,
-  ] = useState<SuperAdminDashboard | null>(null);
+  const { selectedDate } = useDashboardDate();
+  const [dashboard, setDashboard] = useState<SuperAdminDashboard | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
+  // Hydration Fix: Wait for client to mount before rendering
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+        const response = await getSuperAdminDashboard(selectedDate);
+        setDashboard(response);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchDashboard();
   }, [selectedDate]);
 
-  const fetchDashboard = async () => {
-    try {
-      setLoading(true);
-
-      const response = await getSuperAdminDashboard(
-        selectedDate
-      );
-
-      setDashboard(response);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (!mounted) {
+    return <div style={{ minHeight: "400px" }} />;
+  }
 
   if (loading || !dashboard) {
     return (
@@ -128,11 +115,16 @@ export default function SuperAdminDashboardPage() {
           display: "flex",
           flexDirection: "column",
           gap: "24px",
-          padding: "20px 32px 32px",
+          padding: isMobile ? "16px" : "20px 32px 32px",
         }}
       >
         {/* Core Stats Grid */}
-        <div style={statsGrid}>
+        <div
+          style={{
+            ...statsGrid,
+            gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
+          }}
+        >
           {statCards.map((card) => {
             const Icon = card.icon;
 
@@ -146,7 +138,11 @@ export default function SuperAdminDashboardPage() {
                   <Icon size={18} color="#38bdf8" />
                 </div>
 
-                <div style={{ marginTop: "12px" }}>
+                <div
+                  style={{
+                    marginTop: "12px",
+                  }}
+                >
                   <div style={cardValue}>{card.value}</div>
                   <div style={cardLabel}>{card.label}</div>
                 </div>
@@ -159,36 +155,70 @@ export default function SuperAdminDashboardPage() {
         <div style={sectionDivider} />
 
         {/* Analytics Grid */}
-        <div style={statsGrid}>
+        <div
+          style={{
+            ...statsGrid,
+            gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
+          }}
+        >
           <div className="hover-card" style={statCard}>
             <div style={iconBox}>
               <Clock3 size={18} color="#38bdf8" />
             </div>
 
-            <div style={{ marginTop: "12px" }}>
+            <div
+              style={{
+                marginTop: "12px",
+              }}
+            >
               <div style={cardValue}>{dashboard.analytics_date}</div>
               <div style={cardLabel}>Analytics Date</div>
             </div>
           </div>
 
           <div className="hover-card" style={statCard}>
-            <div style={{ ...iconBox, background: "rgba(168,85,247,0.12)" }}>
+            <div
+              style={{
+                ...iconBox,
+                background: "rgba(168,85,247,0.12)",
+              }}
+            >
               <CalendarDays size={18} color="#c084fc" />
             </div>
 
-            <div style={{ marginTop: "12px" }}>
-              <div style={cardValue}>{dashboard.selected_date_appointments}</div>
+            <div
+              style={{
+                marginTop: "12px",
+              }}
+            >
+              <div style={cardValue}>
+                {dashboard.selected_date_appointments}
+              </div>
               <div style={cardLabel}>Appointments Today</div>
             </div>
           </div>
 
           <div className="hover-card" style={statCard}>
-            <div style={{ ...iconBox, background: "rgba(245,158,11,0.12)" }}>
+            <div
+              style={{
+                ...iconBox,
+                background: "rgba(245,158,11,0.12)",
+              }}
+            >
               <IndianRupee size={18} color="#fbbf24" />
             </div>
 
-            <div style={{ marginTop: "12px" }}>
-              <div style={{ ...cardValue, color: "#f59e0b" }}>
+            <div
+              style={{
+                marginTop: "12px",
+              }}
+            >
+              <div
+                style={{
+                  ...cardValue,
+                  color: "#f59e0b",
+                }}
+              >
                 {dashboard.pending_payments}
               </div>
               <div style={cardLabel}>Pending Payments</div>
@@ -203,20 +233,29 @@ export default function SuperAdminDashboardPage() {
         <div>
           <h2 style={sectionTitle}>Recent Clinics</h2>
 
-          <div style={recentGrid}>
+          <div
+            style={{
+              ...recentGrid,
+              gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)",
+            }}
+          >
             {dashboard.recent_clinics.map((clinic) => (
               <div
                 key={clinic.id}
                 className="hover-card"
                 style={recentCard}
               >
-                <h3 style={recentClinicName}>
-                  {clinic.name}
-                </h3>
-                
+                <h3 style={recentClinicName}>{clinic.name}</h3>
+
                 <div style={cardDivider} />
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
                   <div style={recentText}>
                     <span style={recentLabel}>Email:</span> {clinic.email}
                   </div>
@@ -224,13 +263,16 @@ export default function SuperAdminDashboardPage() {
                     <span style={recentLabel}>Phone:</span> {clinic.phone}
                   </div>
                   <div style={recentText}>
-                    <span style={recentLabel}>Address:</span> {clinic.address || "No address provided"}
+                    <span style={recentLabel}>Address:</span>{" "}
+                    {clinic.address || "No address provided"}
                   </div>
                   <div style={recentText}>
-                    <span style={recentLabel}>Created:</span> {new Date(clinic.created_at).toLocaleString()}
+                    <span style={recentLabel}>Created:</span>{" "}
+                    {new Date(clinic.created_at).toLocaleString()}
                   </div>
                   <div style={recentText}>
-                    <span style={recentLabel}>Updated:</span> {new Date(clinic.updated_at).toLocaleString()}
+                    <span style={recentLabel}>Updated:</span>{" "}
+                    {new Date(clinic.updated_at).toLocaleString()}
                   </div>
                 </div>
               </div>
@@ -246,15 +288,14 @@ export default function SuperAdminDashboardPage() {
 
 const statsGrid = {
   display: "grid",
-  gridTemplateColumns: "repeat(3, 1fr)",
-  gap: "16px", 
+  gap: "16px",
 };
 
 const statCard = {
   background: "rgba(255,255,255,0.025)",
   border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: "16px", 
-  padding: "18px 20px", 
+  borderRadius: "16px",
+  padding: "18px 20px",
   display: "flex",
   flexDirection: "column" as const,
 };
@@ -286,13 +327,14 @@ const cardLabel = {
 const sectionDivider = {
   height: "1px",
   width: "100%",
-  background: "linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.08) 20%, rgba(255,255,255,0.08) 80%, rgba(255,255,255,0.02))",
+  background:
+    "linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.08) 20%, rgba(255,255,255,0.08) 80%, rgba(255,255,255,0.02))",
   margin: "8px 0",
 };
 
 const sectionTitle = {
   color: "#f8fafc",
-  fontSize: "20px", 
+  fontSize: "20px",
   fontWeight: 600,
   margin: "0 0 16px 0",
   letterSpacing: "-0.3px",
@@ -300,8 +342,7 @@ const sectionTitle = {
 
 const recentGrid = {
   display: "grid",
-  gridTemplateColumns: "repeat(2, 1fr)",
-  gap: "16px", 
+  gap: "16px",
 };
 
 const recentCard = {
@@ -312,7 +353,7 @@ const recentCard = {
 };
 
 const recentClinicName = {
-  fontSize: "17px", 
+  fontSize: "17px",
   fontWeight: 600,
   color: "#f8fafc",
   margin: "0 0 14px 0",
@@ -334,6 +375,6 @@ const recentText = {
 
 const recentLabel = {
   color: "#64748b",
-  minWidth: "65px", 
+  minWidth: "65px",
   fontWeight: 500,
 };
