@@ -1,42 +1,17 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
-
-import {
-  X,
-  Save,
-  CreditCard,
-  IndianRupee,
-  FileText,
-  ChevronDown,
-} from "lucide-react";
-
-import {
-  createPayment,
-  updatePayment,
-} from "@/services/payment.service";
-
-import {
-  searchAppointments,
-} from "@/services/appointment.service";
-
-import type {
-  PaymentDetails,
-  PaymentMethod,
-} from "@/types/payment";
-
-import type {
-  AppointmentSearchResult,
-} from "@/types/appointment";
+import { useEffect, useState } from "react";
+import { X, Save, IndianRupee, FileText, ChevronDown } from "lucide-react";
+import { createPayment, updatePayment } from "@/services/payment.service";
+import { searchAppointments } from "@/services/appointment.service";
+import type { PaymentDetails, PaymentMethod } from "@/types/payment";
+import type { AppointmentSearchResult } from "@/types/appointment";
+import { useMobile } from "@/hooks/useMobile";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-
   mode: "create" | "edit";
   payment?: PaymentDetails | null;
   appointmentId?: number;
@@ -50,28 +25,26 @@ export default function PaymentFormModal({
   payment,
   appointmentId,
 }: Props) {
-  // Form State
+  const isMobile = useMobile();
+
   const [totalAmount, setTotalAmount] = useState<string>("");
   const [amountPaid, setAmountPaid] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | "">("");
   const [notes, setNotes] = useState("");
 
-  // Status State
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Appointment Search State
   const [appointments, setAppointments] = useState<AppointmentSearchResult[]>([]);
   const [appointmentSearch, setAppointmentSearch] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentSearchResult | null>(null);
 
-  // Hover states
   const [closeHovered, setCloseHovered] = useState(false);
   const [submitHovered, setSubmitHovered] = useState(false);
+  const [cancelHovered, setCancelHovered] = useState(false);
 
-  // Initialize form based on mode
   useEffect(() => {
     if (mode === "edit" && payment) {
       setTotalAmount(payment.total_amount.toString());
@@ -111,7 +84,6 @@ export default function PaymentFormModal({
     }
   }, [mode, payment, isOpen]);
 
-  // Debounced appointment search
   useEffect(() => {
     if (mode !== "create" || !isOpen) {
       return;
@@ -246,11 +218,22 @@ export default function PaymentFormModal({
       `}</style>
 
       <div style={overlayStyle}>
-        <div style={modalStyle}>
+        <div
+          style={{
+            ...modalStyle,
+            width: isMobile ? "92vw" : "min(820px, 92vw)",
+            padding: isMobile ? "24px" : "36px",
+          }}
+        >
           {/* Header */}
           <div style={headerStyle}>
             <div>
-              <h2 style={titleStyle}>
+              <h2
+                style={{
+                  ...titleStyle,
+                  fontSize: isMobile ? "28px" : "34px",
+                }}
+              >
                 {mode === "edit" ? "Edit Payment" : "Create Payment"}
               </h2>
               <p style={subtitleStyle}>
@@ -286,14 +269,17 @@ export default function PaymentFormModal({
             }}
           >
             <div style={scrollableContainer}>
-              
-              {/* Appointment Selection for Create Mode */}
               {mode === "create" && !appointmentId && (
                 <div>
                   <p style={labelStyle}>Select Appointment</p>
 
                   {!selectedAppointment && (
-                    <div style={searchGrid}>
+                    <div
+                      style={{
+                        ...searchGrid,
+                        gridTemplateColumns: isMobile ? "1fr" : "1fr 220px",
+                      }}
+                    >
                       <input
                         type="text"
                         placeholder="Search patient, doctor, phone..."
@@ -335,6 +321,8 @@ export default function PaymentFormModal({
                             onClick={() => setSelectedAppointment(isSelected ? null : appointment)}
                             style={{
                               ...appointmentCard,
+                              flexDirection: isMobile ? "column" : "row",
+                              alignItems: isMobile ? "flex-start" : "center",
                               border: isSelected
                                 ? "1px solid rgba(59,130,246,0.45)"
                                 : "1px solid rgba(255,255,255,0.08)",
@@ -362,6 +350,8 @@ export default function PaymentFormModal({
                               style={{
                                 color: isSelected ? "#38bdf8" : "#64748b",
                                 fontWeight: 600,
+                                marginTop: isMobile ? "12px" : "0",
+                                alignSelf: isMobile ? "flex-end" : "center",
                               }}
                             >
                               {isSelected ? "Selected" : "Select"}
@@ -374,10 +364,15 @@ export default function PaymentFormModal({
                 </div>
               )}
 
-              {/* Payment Fields (Visible if editing or if an appointment is selected) */}
               {(mode === "edit" || selectedAppointment || appointmentId) && (
                 <>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px" }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                      gap: "18px",
+                    }}
+                  >
                     <InputField
                       icon={<IndianRupee size={18} />}
                       label="Total Amount"
@@ -397,7 +392,6 @@ export default function PaymentFormModal({
                     />
                   </div>
 
-                  {/* Payment Method Dropdown */}
                   <div>
                     <p style={labelStyle}>Payment Method</p>
                     <div style={{ position: "relative" }}>
@@ -419,7 +413,7 @@ export default function PaymentFormModal({
                         <option value="card">Card</option>
                         <option value="bank_transfer">Bank Transfer</option>
                       </select>
-                      
+
                       <div style={chevronOverlay}>
                         <ChevronDown size={20} />
                       </div>
@@ -438,26 +432,54 @@ export default function PaymentFormModal({
               )}
             </div>
 
-            {/* Messages */}
             {error && <div style={messageStyle("error")}>{error}</div>}
             {success && <div style={messageStyle("success")}>{success}</div>}
 
-            {/* Actions */}
-            <div style={actionRow}>
+            <div
+              style={{
+                ...actionRow,
+                flexDirection: isMobile ? "column" : "row",
+              }}
+            >
+              <button
+                type="button"
+                onClick={onClose}
+                onMouseEnter={() => setCancelHovered(true)}
+                onMouseLeave={() => setCancelHovered(false)}
+                style={{
+                  ...cancelButton,
+                  width: isMobile ? "100%" : "auto",
+                  background: cancelHovered ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
+                  border: `1px solid ${cancelHovered ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.08)"}`,
+                  transform: cancelHovered ? "translateY(-1px)" : "translateY(0)",
+                }}
+              >
+                Cancel
+              </button>
+
               <button
                 type="submit"
+                disabled={loading || success !== ""}
                 onMouseEnter={() => setSubmitHovered(true)}
                 onMouseLeave={() => setSubmitHovered(false)}
-                disabled={loading || success !== ""}
                 style={{
                   ...saveButton,
-                  background: loading || success !== ""
-                    ? "linear-gradient(135deg, #2563eb, #1d4ed8)"
-                    : submitHovered
-                      ? "linear-gradient(135deg, #3b82f6, #2563eb)"
-                      : "linear-gradient(135deg, #2563eb, #1d4ed8)",
-                  transform: submitHovered && !loading && success === "" ? "translateY(-2px)" : "translateY(0)",
-                  boxShadow: submitHovered && !loading && success === "" ? "0 8px 24px rgba(37, 99, 235, 0.4)" : "none",
+                  width: isMobile ? "100%" : "auto",
+                  justifyContent: "center",
+                  background:
+                    loading || success !== ""
+                      ? "linear-gradient(135deg, #2563eb, #1d4ed8)"
+                      : submitHovered
+                        ? "linear-gradient(135deg, #3b82f6, #2563eb)"
+                        : "linear-gradient(135deg, #2563eb, #1d4ed8)",
+                  transform:
+                    submitHovered && !loading && success === ""
+                      ? "translateY(-2px)"
+                      : "translateY(0)",
+                  boxShadow:
+                    submitHovered && !loading && success === ""
+                      ? "0 8px 24px rgba(37, 99, 235, 0.4)"
+                      : "none",
                   opacity: loading || success !== "" ? 0.7 : 1,
                 }}
               >
@@ -505,7 +527,10 @@ function InputField({ label, icon, placeholder, value, onChange, type = "text" }
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          style={{ ...inputStyle, paddingLeft: "46px" }}
+          style={{
+            ...inputStyle,
+            paddingLeft: "46px",
+          }}
         />
       </div>
     </div>
@@ -534,7 +559,12 @@ function TextAreaField({ label, icon, placeholder, value, onChange }: any) {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          style={{ ...inputStyle, paddingLeft: "46px", resize: "vertical", minHeight: "85px" }}
+          style={{
+            ...inputStyle,
+            paddingLeft: "46px",
+            resize: "vertical",
+            minHeight: "85px",
+          }}
         />
       </div>
     </div>
@@ -555,14 +585,11 @@ const overlayStyle = {
 };
 
 const modalStyle = {
-  width: "100%",
-  maxWidth: "820px",
   maxHeight: "88vh",
   borderRadius: "30px",
   background: "linear-gradient(180deg, rgba(7,15,35,0.98), rgba(2,10,24,0.98))",
   border: "1px solid rgba(255,255,255,0.08)",
   boxShadow: "0 40px 90px rgba(0,0,0,0.55)",
-  padding: "36px",
   position: "relative" as const,
   display: "flex",
   flexDirection: "column" as const,
@@ -580,7 +607,6 @@ const headerStyle = {
 const titleStyle = {
   color: "#f8fafc",
   margin: 0,
-  fontSize: "34px",
   fontWeight: 700,
   letterSpacing: "-0.5px",
 };
@@ -634,11 +660,11 @@ const inputStyle = {
   outline: "none",
   fontSize: "15px",
   lineHeight: 1.6,
+  transition: "all 0.22s ease",
 };
 
 const searchGrid = {
   display: "grid",
-  gridTemplateColumns: "1fr 220px",
   gap: "14px",
   marginBottom: "18px",
 };
@@ -652,9 +678,9 @@ const appointmentCard = {
   padding: "18px",
   borderRadius: "20px",
   cursor: "pointer",
+  transition: "all 0.2s ease",
   display: "flex",
   justifyContent: "space-between",
-  alignItems: "center",
 };
 
 const emptyState = {
@@ -670,6 +696,7 @@ const actionRow = {
   justifyContent: "flex-end",
   marginTop: "24px",
   paddingTop: "10px",
+  gap: "14px",
 };
 
 const saveButton = {
@@ -685,6 +712,18 @@ const saveButton = {
   fontWeight: 600,
   fontSize: "15px",
   transition: "all 0.25s ease",
+};
+
+const cancelButton = {
+  height: "56px",
+  padding: "0 24px",
+  borderRadius: "16px",
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.05)",
+  color: "#d6e2f0",
+  cursor: "pointer",
+  fontWeight: 600,
+  transition: "all 0.22s ease",
 };
 
 const messageStyle = (type: "error" | "success") => ({
