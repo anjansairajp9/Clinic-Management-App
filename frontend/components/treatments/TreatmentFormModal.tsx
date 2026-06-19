@@ -1,46 +1,20 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
+import { X, Save, FileText } from "lucide-react";
 
-import {
-  X,
-  Save,
-  FileText,
-} from "lucide-react";
-
-import {
-  updateTreatment,
-  createTreatment,
-} from "@/services/treatment.service";
-
-import {
-  searchAppointments,
-} from "@/services/appointment.service";
-
-import type {
-  TreatmentDetails,
-} from "@/types/treatment";
-
-import type {
-  AppointmentSearchResult,
-} from "@/types/appointment";
+import { updateTreatment, createTreatment } from "@/services/treatment.service";
+import { searchAppointments } from "@/services/appointment.service";
+import type { TreatmentDetails } from "@/types/treatment";
+import type { AppointmentSearchResult } from "@/types/appointment";
+import { useMobile } from "@/hooks/useMobile";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-
-  mode:
-  | "create"
-  | "edit";
-
-  treatment?:
-  | TreatmentDetails
-  | null;
-
+  mode: "create" | "edit";
+  treatment?: TreatmentDetails | null;
   appointmentId?: number;
 };
 
@@ -52,6 +26,8 @@ export default function TreatmentFormModal({
   treatment,
   appointmentId,
 }: Props) {
+  const isMobile = useMobile();
+
   const [diagnosis, setDiagnosis] = useState("");
   const [treatmentPerformed, setTreatmentPerformed] = useState("");
   const [medicinesPrescribed, setMedicinesPrescribed] = useState("");
@@ -60,40 +36,18 @@ export default function TreatmentFormModal({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const [
-    appointments,
-    setAppointments,
-  ] = useState<
-    AppointmentSearchResult[]
-  >([]);
-
-  const [
-    appointmentSearch,
-    setAppointmentSearch,
-  ] = useState("");
-
-  const [
-    filterDate,
-    setFilterDate,
-  ] = useState("");
-
-  const [
-    selectedAppointment,
-    setSelectedAppointment,
-  ] =
-    useState<AppointmentSearchResult | null>(
-      null
-    );
+  const [appointments, setAppointments] = useState<AppointmentSearchResult[]>([]);
+  const [appointmentSearch, setAppointmentSearch] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentSearchResult | null>(null);
 
   // Hover states for interactive buttons
   const [closeHovered, setCloseHovered] = useState(false);
+  const [cancelHovered, setCancelHovered] = useState(false);
   const [submitHovered, setSubmitHovered] = useState(false);
 
   useEffect(() => {
-    if (
-      mode === "edit" &&
-      treatment
-    ) {
+    if (mode === "edit" && treatment) {
       setDiagnosis(treatment.diagnosis || "");
       setTreatmentPerformed(treatment.treatment_performed || "");
       setMedicinesPrescribed(treatment.medicines_prescribed || "");
@@ -111,112 +65,57 @@ export default function TreatmentFormModal({
     setError("");
     setSuccess("");
 
-    if (
-      mode ===
-      "create"
-    ) {
-      const fetchAppointments =
-        async () => {
-          try {
-            const response =
-              await searchAppointments(
-                {
-                  page: 1,
-                  limit: 50,
-                }
-              );
+    if (mode === "create") {
+      const fetchAppointments = async () => {
+        try {
+          const response = await searchAppointments({
+            page: 1,
+            limit: 50,
+          });
 
-            setAppointments(
-              response.filter(
-                (
-                  appointment: AppointmentSearchResult
-                ) =>
-                  [
-                    "scheduled",
-                    "completed",
-                  ].includes(
-                    appointment.status.toLowerCase()
-                  )
-              )
-            );
-          } catch (
-          error
-          ) {
-            console.error(
-              error
-            );
-          }
-        };
+          setAppointments(
+            response.filter((appointment: AppointmentSearchResult) =>
+              ["scheduled", "completed"].includes(appointment.status.toLowerCase())
+            )
+          );
+        } catch (error) {
+          console.error(error);
+        }
+      };
 
       fetchAppointments();
     }
   }, [mode, treatment, isOpen]);
 
   useEffect(() => {
-    if (
-      mode !== "create" ||
-      !isOpen
-    ) {
+    if (mode !== "create" || !isOpen) {
       return;
     }
 
-    const fetchAppointments =
-      async () => {
-        try {
-          const response =
-            await searchAppointments({
-              query:
-                appointmentSearch.trim(),
+    const fetchAppointments = async () => {
+      try {
+        const response = await searchAppointments({
+          query: appointmentSearch.trim(),
+          appointment_date: filterDate || undefined,
+          page: 1,
+          limit: 10,
+        });
 
-              appointment_date:
-                filterDate ||
-                undefined,
+        const filtered = response.filter(
+          (appointment: AppointmentSearchResult) =>
+            ["scheduled", "completed"].includes(appointment.status.toLowerCase())
+        );
 
-              page: 1,
-              limit: 10,
-            });
+        setAppointments(filtered);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-          const filtered =
-            response.filter(
-              (
-                appointment: AppointmentSearchResult
-              ) =>
-                [
-                  "scheduled",
-                  "completed",
-                ].includes(
-                  appointment.status.toLowerCase()
-                )
-            );
+    const timeout = setTimeout(fetchAppointments, 300);
 
-          setAppointments(
-            filtered
-          );
-        } catch (
-        error
-        ) {
-          console.error(
-            error
-          );
-        }
-      };
-
-    const timeout =
-      setTimeout(
-        fetchAppointments,
-        300
-      );
-
-    return () =>
-      clearTimeout(
-        timeout
-      );
-  }, [
-    mode,
-    isOpen,
-    appointmentSearch,
-    filterDate,
-  ]);
+    return () => clearTimeout(timeout);
+  }, [mode, isOpen, appointmentSearch, filterDate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -226,15 +125,8 @@ export default function TreatmentFormModal({
       setError("");
       setSuccess("");
 
-      if (
-        mode ===
-        "create" &&
-        !selectedAppointment
-      ) {
-        setError(
-          "Please select an appointment"
-        );
-
+      if (mode === "create" && !selectedAppointment) {
+        setError("Please select an appointment");
         return;
       }
 
@@ -254,9 +146,7 @@ export default function TreatmentFormModal({
         medicines_prescribed: medicinesPrescribed.trim()
           ? medicinesPrescribed
           : undefined,
-        procedure_notes: procedureNotes.trim()
-          ? procedureNotes
-          : undefined,
+        procedure_notes: procedureNotes.trim() ? procedureNotes : undefined,
         follow_up_instructions: followUpInstructions.trim()
           ? followUpInstructions
           : undefined,
@@ -298,7 +188,9 @@ export default function TreatmentFormModal({
   }
 
   // Only display the selected appointment if one is selected, otherwise show all filtered appointments
-  const displayAppointments = selectedAppointment ? [selectedAppointment] : appointments;
+  const displayAppointments = selectedAppointment
+    ? [selectedAppointment]
+    : appointments;
 
   return (
     <>
@@ -330,29 +222,26 @@ export default function TreatmentFormModal({
       `}</style>
 
       <div style={overlayStyle}>
-        <div style={modalStyle}>
+        <div
+          style={{
+            ...modalStyle,
+            width: isMobile ? "92vw" : "min(820px, 92vw)",
+            padding: isMobile ? "24px" : "34px",
+          }}
+        >
           {/* Header */}
           <div style={headerStyle}>
             <div>
               <h2
                 style={{
-                  color: "#f8fafc",
-                  margin: 0,
-                  fontSize: "34px",
-                  fontWeight: 700,
-                  letterSpacing: "-0.5px",
+                  ...titleStyle,
+                  fontSize: isMobile ? "28px" : "34px",
                 }}
               >
                 {mode === "edit" ? "Edit Treatment" : "Create Treatment"}
               </h2>
 
-              <p
-                style={{
-                  color: "#94a3b8",
-                  marginTop: "8px",
-                  fontSize: "15px",
-                }}
-              >
+              <p style={subtitleStyle}>
                 {mode === "edit"
                   ? "Update treatment information"
                   : "Create a new treatment record"}
@@ -365,8 +254,12 @@ export default function TreatmentFormModal({
               onMouseLeave={() => setCloseHovered(false)}
               style={{
                 ...closeButton,
-                background: closeHovered ? "rgba(239, 68, 68, 0.15)" : "rgba(255, 255, 255, 0.04)",
-                borderColor: closeHovered ? "rgba(239, 68, 68, 0.3)" : "rgba(255, 255, 255, 0.08)",
+                background: closeHovered
+                  ? "rgba(239, 68, 68, 0.15)"
+                  : "rgba(255, 255, 255, 0.04)",
+                borderColor: closeHovered
+                  ? "rgba(239, 68, 68, 0.3)"
+                  : "rgba(255, 255, 255, 0.08)",
                 color: closeHovered ? "#f87171" : "#d6e2f0",
                 transform: closeHovered ? "scale(1.05)" : "scale(1)",
               }}
@@ -394,373 +287,280 @@ export default function TreatmentFormModal({
                 scrollbarWidth: "thin",
               }}
             >
-              {mode ===
-                "create" && (
-                  <div>
-                    <p
-                      style={{
-                        color:
-                          "#94a3b8",
-                        marginBottom:
-                          "10px",
-                        fontSize:
-                          "14px",
-                        fontWeight:
-                          600,
-                      }}
-                    >
-                      Select
-                      Appointment
-                    </p>
+              {mode === "create" && (
+                <div>
+                  <p
+                    style={{
+                      color: "#94a3b8",
+                      marginBottom: "10px",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Select Appointment
+                  </p>
 
-                    {/* Hide search inputs if an appointment is already selected to keep it clean */}
-                    {!selectedAppointment && (
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns:
-                            "1fr 220px",
-                          gap: "14px",
-                          marginBottom: "18px",
-                        }}
-                      >
-                        <input
-                          type="text"
-                          placeholder="Search patient, doctor, phone..."
-                          value={
-                            appointmentSearch
-                          }
-                          onChange={(e) =>
-                            setAppointmentSearch(
-                              e.target.value
-                            )
-                          }
-                          className="hover-field"
-                          style={{
-                            ...searchInput,
-                          }}
-                        />
-
-                        <input
-                          type="date"
-                          value={filterDate}
-                          onChange={(e) =>
-                            setFilterDate(
-                              e.target.value
-                            )
-                          }
-                          className="hover-field"
-                          style={{
-                            ...searchInput,
-                          }}
-                        />
-                      </div>
-                    )}
-
+                  {/* Hide search inputs if an appointment is already selected to keep it clean */}
+                  {!selectedAppointment && (
                     <div
                       style={{
                         display: "grid",
-                        gap: "12px",
-                        maxHeight: selectedAppointment ? "none" : "260px",
-                        overflowY: selectedAppointment ? "visible" : "auto",
+                        gridTemplateColumns: isMobile ? "1fr" : "1fr 220px",
+                        gap: "14px",
+                        marginBottom: "18px",
                       }}
                     >
-                      {displayAppointments.length ===
-                        0 ? (
-                        <div
-                          style={{
-                            padding: "30px",
-                            textAlign:
-                              "center",
-                            color:
-                              "#64748b",
-                            border:
-                              "1px dashed rgba(255,255,255,0.08)",
-                            borderRadius:
-                              "20px",
-                          }}
-                        >
-                          No appointments found
-                        </div>
-                      ) : (
-                        displayAppointments.map(
-                          (
-                            appointment: AppointmentSearchResult
-                          ) => {
-                            const isSelected =
-                              selectedAppointment?.id ===
-                              appointment.id;
+                      <input
+                        type="text"
+                        placeholder="Search patient, doctor, phone..."
+                        value={appointmentSearch}
+                        onChange={(e) =>
+                          setAppointmentSearch(e.target.value)
+                        }
+                        className="hover-field"
+                        style={searchInput}
+                      />
 
-                            return (
-                              <div
-                                key={
-                                  appointment.id
-                                }
-                                className="hover-appt-card"
-                                onClick={() =>
-                                  setSelectedAppointment(
-                                    isSelected ? null : appointment
-                                  )
-                                }
-                                style={{
-                                  ...appointmentCard,
-                                  border:
-                                    isSelected
-                                      ? "1px solid rgba(59,130,246,0.45)"
-                                      : "1px solid rgba(255,255,255,0.08)",
+                      <input
+                        type="date"
+                        value={filterDate}
+                        onChange={(e) => setFilterDate(e.target.value)}
+                        className="cm-date-picker hover-field"
+                        style={searchInput}
+                      />
+                    </div>
+                  )}
 
-                                  background:
-                                    isSelected
-                                      ? "rgba(59,130,246,0.12)"
-                                      : "rgba(255,255,255,0.03)",
-                                }}
-                              >
-                                <div>
-                                  <div
-                                    style={{
-                                      color:
-                                        "#f8fafc",
-                                      fontWeight:
-                                        600,
-                                    }}
-                                  >
-                                    {
-                                      appointment.patient_name
-                                    }
-                                  </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: "12px",
+                      maxHeight: selectedAppointment ? "none" : "260px",
+                      overflowY: selectedAppointment ? "visible" : "auto",
+                    }}
+                  >
+                    {displayAppointments.length === 0 ? (
+                      <div
+                        style={{
+                          padding: "30px",
+                          textAlign: "center",
+                          color: "#64748b",
+                          border: "1px dashed rgba(255,255,255,0.08)",
+                          borderRadius: "20px",
+                        }}
+                      >
+                        No appointments found
+                      </div>
+                    ) : (
+                      displayAppointments.map(
+                        (appointment: AppointmentSearchResult) => {
+                          const isSelected =
+                            selectedAppointment?.id === appointment.id;
 
-                                  <div
-                                    style={{
-                                      color:
-                                        "#94a3b8",
-                                      fontSize:
-                                        "14px",
-                                      marginTop:
-                                        "4px",
-                                    }}
-                                  >
-                                    Dr.{" "}
-                                    {
-                                      appointment.doctor_name
-                                    }
-                                  </div>
-
-                                  <div
-                                    style={{
-                                      color:
-                                        "#64748b",
-                                      fontSize:
-                                        "13px",
-                                      marginTop:
-                                        "6px",
-                                    }}
-                                  >
-                                    {new Date(
-                                      appointment.appointment_time
-                                    ).toLocaleString()}
-                                  </div>
-
-                                  <div
-                                    style={{
-                                      color:
-                                        "#7a9ab8",
-                                      fontSize:
-                                        "13px",
-                                      marginTop:
-                                        "8px",
-                                    }}
-                                  >
-                                    {
-                                      appointment.complaint ||
-                                      "No complaint"
-                                    }
-                                  </div>
+                          return (
+                            <div
+                              key={appointment.id}
+                              className="hover-appt-card"
+                              onClick={() =>
+                                setSelectedAppointment(
+                                  isSelected ? null : appointment
+                                )
+                              }
+                              style={{
+                                ...appointmentCard,
+                                border: isSelected
+                                  ? "1px solid rgba(59,130,246,0.45)"
+                                  : "1px solid rgba(255,255,255,0.08)",
+                                background: isSelected
+                                  ? "rgba(59,130,246,0.12)"
+                                  : "rgba(255,255,255,0.03)",
+                                flexDirection: isMobile ? "column" : "row",
+                                alignItems: isMobile ? "flex-start" : "center",
+                                gap: isMobile ? "12px" : "0",
+                              }}
+                            >
+                              <div>
+                                <div
+                                  style={{
+                                    color: "#f8fafc",
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {appointment.patient_name}
                                 </div>
 
                                 <div
                                   style={{
-                                    color:
-                                      isSelected
-                                        ? "#38bdf8"
-                                        : "#64748b",
-                                    fontWeight:
-                                      600,
+                                    color: "#94a3b8",
+                                    fontSize: "14px",
+                                    marginTop: "4px",
                                   }}
                                 >
-                                  {isSelected
-                                    ? "Selected"
-                                    : "Select"}
+                                  Dr. {appointment.doctor_name}
+                                </div>
+
+                                <div
+                                  style={{
+                                    color: "#64748b",
+                                    fontSize: "13px",
+                                    marginTop: "6px",
+                                  }}
+                                >
+                                  {new Date(
+                                    appointment.appointment_time
+                                  ).toLocaleString()}
+                                </div>
+
+                                <div
+                                  style={{
+                                    color: "#7a9ab8",
+                                    fontSize: "13px",
+                                    marginTop: "8px",
+                                  }}
+                                >
+                                  {appointment.complaint || "No complaint"}
                                 </div>
                               </div>
-                            );
-                          }
-                        )
-                      )}
-                    </div>
 
-                    {selectedAppointment && (
-                      <div
-                        style={
-                          infoCard
+                              <div
+                                style={{
+                                  color: isSelected ? "#38bdf8" : "#64748b",
+                                  fontWeight: 600,
+                                  alignSelf: isMobile ? "flex-end" : "auto",
+                                }}
+                              >
+                                {isSelected ? "Selected" : "Select"}
+                              </div>
+                            </div>
+                          );
                         }
-                      >
-                        <div>
-                          <strong>
-                            Patient:
-                          </strong>{" "}
-                          {
-                            selectedAppointment.patient_name
-                          }
-                          {" ("}
-                          {
-                            selectedAppointment.patient_age
-                          }
-                          {")"}
-                        </div>
-
-                        <div>
-                          <strong>
-                            Doctor:
-                          </strong>{" "}
-                          Dr.{" "}
-                          {
-                            selectedAppointment.doctor_name
-                          }
-                        </div>
-
-                        <div>
-                          <strong>
-                            Time:
-                          </strong>{" "}
-                          {new Date(
-                            selectedAppointment.appointment_time
-                          ).toLocaleString()}
-                        </div>
-
-                        <div>
-                          <strong>
-                            Complaint:
-                          </strong>{" "}
-                          {
-                            selectedAppointment.complaint ||
-                            "No complaint"
-                          }
-                        </div>
-                      </div>
+                      )
                     )}
                   </div>
-                )}
+                </div>
+              )}
 
-              {(
-                mode === "edit" ||
-                selectedAppointment
-              ) && (
-                  <>
-                    <TextAreaField
-                      label="Diagnosis"
-                      value={diagnosis}
-                      onChange={setDiagnosis}
-                    />
+              {(mode === "edit" || selectedAppointment) && (
+                <>
+                  <TextAreaField
+                    label="Diagnosis"
+                    value={diagnosis}
+                    onChange={setDiagnosis}
+                  />
 
-                    <TextAreaField
-                      label="Treatment Performed"
-                      value={treatmentPerformed}
-                      onChange={setTreatmentPerformed}
-                    />
+                  <TextAreaField
+                    label="Treatment Performed"
+                    value={treatmentPerformed}
+                    onChange={setTreatmentPerformed}
+                  />
 
-                    <TextAreaField
-                      label="Medicines Prescribed"
-                      value={medicinesPrescribed}
-                      onChange={setMedicinesPrescribed}
-                    />
+                  <TextAreaField
+                    label="Medicines Prescribed"
+                    value={medicinesPrescribed}
+                    onChange={setMedicinesPrescribed}
+                  />
 
-                    <TextAreaField
-                      label="Procedure Notes"
-                      value={procedureNotes}
-                      onChange={setProcedureNotes}
-                    />
+                  <TextAreaField
+                    label="Procedure Notes"
+                    value={procedureNotes}
+                    onChange={setProcedureNotes}
+                  />
 
-                    <TextAreaField
-                      label="Follow Up Instructions"
-                      value={followUpInstructions}
-                      onChange={setFollowUpInstructions}
-                    />
-                  </>
-                )}
+                  <TextAreaField
+                    label="Follow Up Instructions"
+                    value={followUpInstructions}
+                    onChange={setFollowUpInstructions}
+                  />
+                </>
+              )}
             </div>
 
             {/* Messages */}
             {error && (
               <div
                 style={{
-                  color:
-                    "#f87171",
-                  marginTop:
-                    "20px",
+                  color: "#f87171",
+                  marginTop: "20px",
                 }}
               >
-                {
-                  error
-                }
+                {error}
               </div>
             )}
 
             {success && (
               <div
                 style={{
-                  color:
-                    "#4ade80",
-                  marginTop:
-                    "20px",
+                  color: "#4ade80",
+                  marginTop: "20px",
                 }}
               >
-                {
-                  success
-                }
+                {success}
               </div>
             )}
 
             <div
               style={{
-                display:
-                  "flex",
-                justifyContent:
-                  "flex-end",
-                marginTop:
-                  "28px",
+                display: "flex",
+                flexDirection: isMobile ? "column" : "row",
+                justifyContent: "flex-end",
+                marginTop: "28px",
+                gap: "14px",
               }}
             >
               <button
-                type="submit"
+                type="button"
+                onClick={onClose}
+                onMouseEnter={() => setCancelHovered(true)}
+                onMouseLeave={() => setCancelHovered(false)}
                 style={{
-                  ...saveButton,
-                  background: loading || success !== ""
-                    ? "linear-gradient(135deg, #2563eb, #1d4ed8)"
-                    : submitHovered
-                      ? "linear-gradient(135deg, #3b82f6, #2563eb)"
-                      : "linear-gradient(135deg, #2563eb, #1d4ed8)",
-                  transform: submitHovered && !loading && success === "" ? "translateY(-2px)" : "translateY(0)",
-                  boxShadow: submitHovered && !loading && success === "" ? "0 8px 24px rgba(37, 99, 235, 0.4)" : "none",
-                  opacity: loading || success !== "" ? 0.7 : 1,
+                  ...cancelButton,
+                  width: isMobile ? "100%" : "auto",
+                  background: cancelHovered
+                    ? "rgba(255,255,255,0.08)"
+                    : "rgba(255,255,255,0.04)",
+                  border: `1px solid ${cancelHovered
+                    ? "rgba(255,255,255,0.18)"
+                    : "rgba(255,255,255,0.08)"
+                    }`,
+                  transform: cancelHovered ? "translateY(-1px)" : "translateY(0)",
                 }}
-                disabled={
-                  loading || success !== ""
-                }
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={loading || success !== ""}
                 onMouseEnter={() => setSubmitHovered(true)}
                 onMouseLeave={() => setSubmitHovered(false)}
+                style={{
+                  ...saveButton,
+                  width: isMobile ? "100%" : "auto",
+                  justifyContent: "center",
+                  background:
+                    loading || success !== ""
+                      ? "linear-gradient(135deg, #2563eb, #1d4ed8)"
+                      : submitHovered
+                        ? "linear-gradient(135deg, #3b82f6, #2563eb)"
+                        : "linear-gradient(135deg, #2563eb, #1d4ed8)",
+                  transform:
+                    submitHovered && !loading && success === ""
+                      ? "translateY(-2px)"
+                      : "translateY(0)",
+                  boxShadow:
+                    submitHovered && !loading && success === ""
+                      ? "0 8px 24px rgba(37, 99, 235, 0.4)"
+                      : "none",
+                  opacity: loading || success !== "" ? 0.7 : 1,
+                }}
               >
-                <Save
-                  size={
-                    18
-                  }
-                />
+                <Save size={18} />
 
                 {loading
                   ? "Saving..."
                   : success !== ""
                     ? "Saved!"
-                    : mode ===
-                      "edit"
+                    : mode === "edit"
                       ? "Update Treatment"
                       : "Create Treatment"}
               </button>
@@ -772,19 +572,13 @@ export default function TreatmentFormModal({
   );
 }
 
-function TextAreaField({
-  label,
-  value,
-  onChange,
-}: any) {
+function TextAreaField({ label, value, onChange }: any) {
   return (
     <div>
       <p
         style={{
-          color:
-            "#94a3b8",
-          marginBottom:
-            "8px",
+          color: "#94a3b8",
+          marginBottom: "8px",
         }}
       >
         {label}
@@ -793,203 +587,110 @@ function TextAreaField({
       <textarea
         className="hover-field"
         rows={3}
-        value={
-          value
-        }
-        onChange={(
-          e
-        ) =>
-          onChange(
-            e.target
-              .value
-          )
-        }
-        style={
-          inputStyle
-        }
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={inputStyle}
       />
     </div>
   );
 }
 
+/* ---------- Styles ---------- */
+
 const overlayStyle = {
-  position:
-    "fixed" as const,
+  position: "fixed" as const,
   inset: 0,
-  background:
-    "rgba(0,0,0,0.7)",
-  backdropFilter:
-    "blur(10px)",
-  display:
-    "flex",
-  alignItems:
-    "center",
-  justifyContent:
-    "center",
-  zIndex:
-    9999,
+  background: "rgba(0,0,0,0.7)",
+  backdropFilter: "blur(10px)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 9999,
 };
 
 const modalStyle = {
-  width: "100%",
-  maxWidth: "820px",
-
   maxHeight: "88vh",
-
   borderRadius: "30px",
-
-  background:
-    "linear-gradient(180deg, rgba(7,15,35,0.98), rgba(2,10,24,0.98))",
-
-  border:
-    "1px solid rgba(255,255,255,0.08)",
-
-  boxShadow:
-    "0 40px 90px rgba(0,0,0,0.55)",
-
-  padding: "28px",
-
+  background: "linear-gradient(180deg, rgba(7,15,35,0.98), rgba(2,10,24,0.98))",
+  border: "1px solid rgba(255,255,255,0.08)",
+  boxShadow: "0 40px 90px rgba(0,0,0,0.55)",
   position: "relative" as const,
-
   display: "flex",
   flexDirection: "column" as const,
-
   overflow: "hidden",
 };
 
 const headerStyle = {
-  display:
-    "flex",
-  justifyContent:
-    "space-between",
-  alignItems:
-    "center",
-  marginBottom:
-    "28px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: "28px",
+};
+
+const titleStyle = {
+  color: "#f8fafc",
+  margin: 0,
+  fontWeight: 700,
+  letterSpacing: "-0.5px",
+};
+
+const subtitleStyle = {
+  color: "#94a3b8",
+  marginTop: "8px",
+  fontSize: "15px",
 };
 
 const closeButton = {
-  width:
-    "50px",
-
-  height:
-    "50px",
-
-  borderRadius:
-    "18px",
-
-  border:
-    "1px solid rgba(255,255,255,0.08)",
-
-  background:
-    "rgba(255,255,255,0.04)",
-
-  color:
-    "#d6e2f0",
-
-  cursor:
-    "pointer",
-
-  display:
-    "flex",
-
-  alignItems:
-    "center",
-
-  justifyContent:
-    "center",
-
-  transition:
-    "all 0.25s ease",
+  width: "50px",
+  height: "50px",
+  borderRadius: "18px",
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.04)",
+  color: "#d6e2f0",
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  transition: "all 0.25s ease",
 };
 
 const inputStyle = {
-  width:
-    "100%",
-
-  background:
-    "rgba(255,255,255,0.04)",
-
-  border:
-    "1px solid rgba(255,255,255,0.08)",
-
-  borderRadius:
-    "18px",
-
-  padding:
-    "16px",
-
-  color:
-    "#f8fafc",
-
-  outline:
-    "none",
-
-  resize:
-    "vertical" as const,
-
-  minHeight:
-    "95px",
-
-  fontSize:
-    "15px",
-
-  lineHeight:
-    1.6,
-
-  transition:
-    "all 0.22s ease",
+  width: "100%",
+  background: "rgba(255,255,255,0.04)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: "18px",
+  padding: "16px",
+  color: "#f8fafc",
+  outline: "none",
+  resize: "vertical" as const,
+  minHeight: "95px",
+  fontSize: "15px",
+  lineHeight: 1.6,
+  transition: "all 0.22s ease",
 };
 
 const saveButton = {
-  height:
-    "56px",
-
-  padding:
-    "0 26px",
-
-  border:
-    "none",
-
-  borderRadius:
-    "18px",
-
-  background:
-    "linear-gradient(135deg, #2563eb, #1d4ed8)",
-
-  color:
-    "white",
-
-  cursor:
-    "pointer",
-
-  display:
-    "flex",
-
-  alignItems:
-    "center",
-
-  gap:
-    "8px",
-
-  fontWeight:
-    600,
-
-  fontSize:
-    "15px",
-
-  transition:
-    "all 0.25s ease",
+  height: "56px",
+  padding: "0 26px",
+  border: "none",
+  borderRadius: "18px",
+  background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
+  color: "white",
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  fontWeight: 600,
+  fontSize: "15px",
+  transition: "all 0.25s ease",
 };
 
 const searchInput = {
   width: "100%",
   height: "56px",
   borderRadius: "18px",
-  border:
-    "1px solid rgba(255,255,255,0.08)",
-  background:
-    "rgba(255,255,255,0.04)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.04)",
   padding: "0 18px",
   color: "#f8fafc",
   outline: "none",
@@ -1000,35 +701,20 @@ const appointmentCard = {
   padding: "18px",
   borderRadius: "20px",
   cursor: "pointer",
-  transition:
-    "all 0.2s ease",
+  transition: "all 0.2s ease",
   display: "flex",
-  justifyContent:
-    "space-between",
+  justifyContent: "space-between",
   alignItems: "center",
 };
 
-const infoCard = {
-  marginTop: "18px",
-
-  padding: "18px",
-
-  borderRadius: "20px",
-
-  background:
-    "linear-gradient(180deg, rgba(59,130,246,0.08), rgba(59,130,246,0.04))",
-
-  border:
-    "1px solid rgba(59,130,246,0.18)",
-
-  color:
-    "#d6e2f0",
-
-  display:
-    "grid",
-
-  gap: "10px",
-
-  fontSize:
-    "14px",
+const cancelButton = {
+  height: "50px",
+  padding: "0 20px",
+  borderRadius: "14px",
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.05)",
+  color: "#d6e2f0",
+  cursor: "pointer",
+  fontWeight: 600,
+  transition: "all 0.22s ease",
 };
