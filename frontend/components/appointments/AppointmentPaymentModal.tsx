@@ -1,16 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import {
-	X,
-	User,
-	Stethoscope,
-	Calendar,
-	CreditCard,
-	FileText,
-} from "lucide-react";
-
+import { User, Stethoscope, Calendar, CreditCard, FileText, X } from "lucide-react";
 import type { PaymentDetails } from "@/types/payment";
+import { useMobile } from "@/hooks/useMobile";
 
 type Props = {
 	isOpen: boolean;
@@ -25,6 +18,7 @@ export default function AppointmentPaymentModal({
 	payment,
 	loading,
 }: Props) {
+	const isMobile = useMobile();
 	const [closeHovered, setCloseHovered] = useState(false);
 
 	if (!isOpen) return null;
@@ -46,14 +40,32 @@ export default function AppointmentPaymentModal({
       `}</style>
 
 			<div style={overlayStyle}>
-				<div style={modalStyle}>
+				<div
+					style={{
+						...modalStyle,
+						width: isMobile ? "92vw" : "min(1150px, 95vw)",
+						padding: isMobile ? "24px" : "36px",
+					}}
+				>
 					{/* Header */}
 					<div style={headerStyle}>
 						<div>
-							<h2 style={{ color: "#f8fafc", margin: 0, fontSize: "34px", fontWeight: 700 }}>
+							<h2
+								style={{
+									color: "#f8fafc",
+									margin: 0,
+									fontSize: isMobile ? "28px" : "34px",
+									fontWeight: 700,
+								}}
+							>
 								Payment Details
 							</h2>
-							<p style={{ color: "#94a3b8", marginTop: "8px" }}>
+							<p
+								style={{
+									color: "#94a3b8",
+									marginTop: "8px",
+								}}
+							>
 								View associated payment information
 							</p>
 						</div>
@@ -74,15 +86,32 @@ export default function AppointmentPaymentModal({
 
 					<div style={scrollableContentStyle}>
 						{loading ? (
-							<div style={{ padding: "80px", textAlign: "center", color: "#94a3b8" }}>
+							<div
+								style={{
+									padding: "80px",
+									textAlign: "center",
+									color: "#94a3b8",
+								}}
+							>
 								Loading payment...
 							</div>
 						) : !payment ? (
-							<div style={{ padding: "80px", textAlign: "center", color: "#94a3b8" }}>
+							<div
+								style={{
+									padding: "80px",
+									textAlign: "center",
+									color: "#94a3b8",
+								}}
+							>
 								No payment found for this appointment
 							</div>
 						) : (
-							<div style={gridStyle}>
+							<div
+								style={{
+									...gridStyle,
+									gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))",
+								}}
+							>
 								<InfoCard
 									icon={<User size={18} />}
 									title="Patient"
@@ -95,9 +124,7 @@ export default function AppointmentPaymentModal({
 								<InfoCard
 									icon={<Stethoscope size={18} />}
 									title="Doctor"
-									items={[
-										["Doctor", payment.doctor_name],
-									]}
+									items={[["Doctor", payment.doctor_name]]}
 								/>
 
 								<InfoCard
@@ -110,13 +137,36 @@ export default function AppointmentPaymentModal({
 									]}
 								/>
 
-								<div className="hover-card" style={{ ...cardStyle, display: "flex", flexDirection: "column", height: "100%" }}>
-									<div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "24px", color: "#4ade80" }}>
+								<div
+									className="hover-card"
+									style={{
+										...cardStyle,
+										display: "flex",
+										flexDirection: "column",
+										height: "100%",
+									}}
+								>
+									<div
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: "10px",
+											marginBottom: "24px",
+											color: "#4ade80",
+										}}
+									>
 										<CreditCard size={20} />
 										<h3 style={cardTitle}>Payment Information</h3>
 									</div>
 
-									<div style={{ display: "grid", gap: "16px", flex: 1, alignContent: "start" }}>
+									<div
+										style={{
+											display: "grid",
+											gap: "16px",
+											flex: 1,
+											alignContent: "start",
+										}}
+									>
 										<DetailBlock label="Total Amount" value={`₹${payment.total_amount}`} />
 										<DetailBlock label="Amount Paid" value={`₹${payment.amount_paid}`} />
 										<DetailBlock label="Due Amount" value={`₹${dueAmount}`} />
@@ -126,16 +176,45 @@ export default function AppointmentPaymentModal({
 									</div>
 								</div>
 
-								<div className="hover-card" style={{ ...cardStyle, gridColumn: "1 / -1" }}>
-									<div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "24px", color: "#60a5fa" }}>
+								<div
+									className="hover-card"
+									style={{
+										...cardStyle,
+										gridColumn: "1 / -1",
+									}}
+								>
+									<div
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: "10px",
+											marginBottom: "24px",
+											color: "#60a5fa",
+										}}
+									>
 										<FileText size={20} />
 										<h3 style={cardTitle}>Treatment Information</h3>
 									</div>
 
-									<div style={{ display: "grid", gap: "16px" }}>
-										<DetailBlock label="Diagnosis" value={payment.treatment_diagnosis || "No treatment recorded"} />
-										<DetailBlock label="Treatment Performed" value={payment.treatment_performed || "-"} />
-										<DetailBlock label="Medicines Prescribed" value={payment.treatment_medicines_prescribed || "-"} isLast />
+									<div
+										style={{
+											display: "grid",
+											gap: "16px",
+										}}
+									>
+										<DetailBlock
+											label="Diagnosis"
+											value={payment.treatment_diagnosis || "No treatment recorded"}
+										/>
+										<DetailBlock
+											label="Treatment Performed"
+											value={payment.treatment_performed || "-"}
+										/>
+										<DetailBlock
+											label="Medicines Prescribed"
+											value={payment.treatment_medicines_prescribed || "-"}
+											isLast
+										/>
 									</div>
 								</div>
 							</div>
@@ -151,16 +230,56 @@ export default function AppointmentPaymentModal({
 
 function InfoCard({ title, items, icon }: any) {
 	return (
-		<div className="hover-card" style={{ ...cardStyle, display: "flex", flexDirection: "column", height: "100%" }}>
-			<div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "18px", color: "#38bdf8" }}>
+		<div
+			className="hover-card"
+			style={{
+				...cardStyle,
+				display: "flex",
+				flexDirection: "column",
+				height: "100%",
+			}}
+		>
+			<div
+				style={{
+					display: "flex",
+					alignItems: "center",
+					gap: "10px",
+					marginBottom: "18px",
+					color: "#38bdf8",
+				}}
+			>
 				<div style={{ display: "flex" }}>{icon}</div>
 				<h3 style={cardTitle}>{title}</h3>
 			</div>
-			<div style={{ display: "flex", flexDirection: "column", gap: "14px", flex: 1 }}>
+			<div
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					gap: "14px",
+					flex: 1,
+				}}
+			>
 				{items.map((item: string[], index: number) => (
 					<div key={index}>
-						<div style={{ color: "#64748b", fontSize: "13px", marginBottom: "4px", fontWeight: 500 }}>{item[0]}</div>
-						<div style={{ color: "#e2e8f0", fontSize: "15px", fontWeight: 500 }}>{item[1]}</div>
+						<div
+							style={{
+								color: "#64748b",
+								fontSize: "13px",
+								marginBottom: "4px",
+								fontWeight: 500,
+							}}
+						>
+							{item[0]}
+						</div>
+						<div
+							style={{
+								color: "#e2e8f0",
+								fontSize: "15px",
+								fontWeight: 500,
+							}}
+						>
+							{item[1]}
+						</div>
 					</div>
 				))}
 			</div>
@@ -170,9 +289,31 @@ function InfoCard({ title, items, icon }: any) {
 
 function DetailBlock({ label, value, isLast = false }: any) {
 	return (
-		<div style={{ paddingBottom: isLast ? "0" : "16px", borderBottom: isLast ? "none" : "1px solid rgba(255,255,255,0.06)" }}>
-			<div style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "6px", fontWeight: 500 }}>{label}</div>
-			<div style={{ color: "#f8fafc", lineHeight: 1.6, fontSize: "15px" }}>{value}</div>
+		<div
+			style={{
+				paddingBottom: isLast ? "0" : "16px",
+				borderBottom: isLast ? "none" : "1px solid rgba(255,255,255,0.06)",
+			}}
+		>
+			<div
+				style={{
+					color: "#94a3b8",
+					fontSize: "13px",
+					marginBottom: "6px",
+					fontWeight: 500,
+				}}
+			>
+				{label}
+			</div>
+			<div
+				style={{
+					color: "#f8fafc",
+					lineHeight: 1.6,
+					fontSize: "15px",
+				}}
+			>
+				{value}
+			</div>
 		</div>
 	);
 }
@@ -192,12 +333,10 @@ const overlayStyle = {
 };
 
 const modalStyle = {
-	width: "min(1150px, 95vw)",
 	maxHeight: "92vh",
 	display: "flex",
 	flexDirection: "column" as const,
 	borderRadius: "34px",
-	padding: "36px",
 	background: "linear-gradient(180deg, rgba(5,15,35,0.98), rgba(2,8,23,0.98))",
 	border: "1px solid rgba(255,255,255,0.08)",
 	boxShadow: "0 40px 120px rgba(0,0,0,0.65)",
@@ -239,7 +378,6 @@ const closeButton = {
 
 const gridStyle = {
 	display: "grid",
-	gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
 	gap: "20px",
 };
 

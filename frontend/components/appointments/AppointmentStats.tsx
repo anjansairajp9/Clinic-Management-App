@@ -1,10 +1,6 @@
 "use client";
 
-import {
-	useEffect,
-	useState,
-} from "react";
-
+import { useEffect, useState } from "react";
 import {
 	CalendarDays,
 	CheckCircle2,
@@ -13,17 +9,10 @@ import {
 	Clock3,
 } from "lucide-react";
 
-import {
-	getAppointmentDashboardStats,
-} from "@/services/appointment.service";
-
-import {
-	useDashboardDate,
-} from "@/hooks/useDashboardDate";
-
-import type {
-	AppointmentStats as AppointmentStatsType,
-} from "@/types/appointment";
+import { getAppointmentDashboardStats } from "@/services/appointment.service";
+import { useDashboardDate } from "@/hooks/useDashboardDate";
+import type { AppointmentStats as AppointmentStatsType } from "@/types/appointment";
+import { useMobile } from "@/hooks/useMobile";
 
 type StatCardProps = {
 	title: string;
@@ -31,77 +20,44 @@ type StatCardProps = {
 	icon: React.ReactNode;
 };
 
-function StatCard({
-	title,
-	value,
-	icon,
-}: StatCardProps) {
+function StatCard({ title, value, icon }: StatCardProps) {
+	const [isHovered, setIsHovered] = useState(false);
+
 	return (
 		<div
+			onMouseEnter={() => setIsHovered(true)}
+			onMouseLeave={() => setIsHovered(false)}
 			style={{
 				background:
 					"linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))",
-				border:
-					"1px solid rgba(255,255,255,0.06)",
-				borderRadius:
-					"20px",
-				padding:
-					"15px",
-				backdropFilter:
-					"blur(14px)",
-				height:
-					"120px",
-				display:
-					"flex",
-				flexDirection:
-					"column",
-				justifyContent:
-					"space-between",
-				transition:
-					"all 0.25s ease",
-				cursor:
-					"default",
+				borderRadius: "20px",
+				padding: "15px",
+				backdropFilter: "blur(14px)",
+				height: "120px",
+				display: "flex",
+				flexDirection: "column",
+				justifyContent: "space-between",
+				transition: "all 0.25s ease",
+				cursor: "default",
 				backgroundImage:
 					"radial-gradient(circle at top right, rgba(56,189,248,0.06), transparent 55%)",
-			}}
-			onMouseEnter={(
-				e
-			) => {
-				e.currentTarget.style.transform =
-					"translateY(-4px)";
-				e.currentTarget.style.border =
-					"1px solid rgba(56,189,248,0.18)";
-				e.currentTarget.style.boxShadow =
-					"0 0 24px rgba(56,189,248,0.08)";
-			}}
-			onMouseLeave={(
-				e
-			) => {
-				e.currentTarget.style.transform =
-					"translateY(0)";
-				e.currentTarget.style.border =
-					"1px solid rgba(255,255,255,0.06)";
-				e.currentTarget.style.boxShadow =
-					"none";
+				border: isHovered
+					? "1px solid rgba(56,189,248,0.18)"
+					: "1px solid rgba(255,255,255,0.06)",
+				transform: isHovered ? "translateY(-4px)" : "translateY(0)",
+				boxShadow: isHovered ? "0 8px 24px rgba(0,0,0,0.15)" : "none",
 			}}
 		>
 			<div
 				style={{
 					width: "44px",
-					height:
-						"44px",
-					borderRadius:
-						"14px",
-					background:
-						"rgba(56,189,248,0.10)",
-					display:
-						"flex",
-					alignItems:
-						"center",
-					justifyContent:
-						"center",
-					color:
-						"#38bdf8",
+					height: "44px",
+					borderRadius: "14px",
+					background: "rgba(56,189,248,0.10)",
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					color: "#38bdf8",
 				}}
 			>
 				{icon}
@@ -110,12 +66,9 @@ function StatCard({
 			<div>
 				<p
 					style={{
-						color:
-							"#7a9ab8",
-						fontSize:
-							"13px",
-						margin:
-							"0 0 8px 0",
+						color: "#7a9ab8",
+						fontSize: "13px",
+						margin: "0 0 8px 0",
 					}}
 				>
 					{title}
@@ -123,13 +76,10 @@ function StatCard({
 
 				<h2
 					style={{
-						color:
-							"#f0f6ff",
-						fontSize:
-							"28px",
+						color: "#f0f6ff",
+						fontSize: "28px",
 						margin: 0,
-						fontWeight:
-							700,
+						fontWeight: 700,
 					}}
 				>
 					{value}
@@ -141,67 +91,47 @@ function StatCard({
 
 type Props = {
 	refreshKey: number;
-}
+};
 
-export default function AppointmentStats({ 
-	refreshKey, 
-}: Props) {
-	const [
-		stats,
-		setStats,
-	] = useState<AppointmentStatsType | null>(
-		null
-	);
+export default function AppointmentStats({ refreshKey }: Props) {
+	const isMobile = useMobile();
 
-	const [
-		loading,
-		setLoading,
-	] = useState(true);
+	// 1. Add mounted state
+	const [mounted, setMounted] = useState(false);
+	const [stats, setStats] = useState<AppointmentStatsType | null>(null);
+	const [loading, setLoading] = useState(true);
+	const { selectedDate } = useDashboardDate();
 
-	const {
-		selectedDate,
-	} =
-		useDashboardDate();
+	// 2. Set mounted after render
+	useEffect(() => {
+		setMounted(true);
+	}, []);
 
 	useEffect(() => {
-		const fetchStats =
-			async () => {
-				try {
-					setLoading(
-						true
-					);
-
-					const response =
-						await getAppointmentDashboardStats(
-							selectedDate
-						);
-
-					setStats(
-						response
-					);
-				} catch (
-					error
-				) {
-					console.error(
-						"Failed to fetch appointment stats",
-						error
-					);
-				} finally {
-					setLoading(
-						false
-					);
-				}
-			};
-
+		const fetchStats = async () => {
+			try {
+				setLoading(true);
+				const response = await getAppointmentDashboardStats(selectedDate);
+				setStats(response);
+			} catch (error) {
+				console.error("Failed to fetch appointment stats", error);
+			} finally {
+				setLoading(false);
+			}
+		};
 		fetchStats();
-	}, [selectedDate, refreshKey,]);
+	}, [selectedDate, refreshKey]);
+
+	// 3. Return a safe wrapper while mounting
+	if (!mounted) {
+		return <div style={{ minHeight: "180px" }} />;
+	}
 
 	if (loading) {
 		return (
 			<p
 				style={{
-					color:
-						"#7a9ab8",
+					color: "#7a9ab8",
 				}}
 			>
 				Loading stats...
@@ -215,82 +145,46 @@ export default function AppointmentStats({
 
 	const cards = [
 		{
-			title:
-				"Total Appointments",
-			value:
-				stats.total_appointments,
-			icon: (
-				<CalendarDays
-					size={22}
-				/>
-			),
+			title: "Total Appointments",
+			value: stats.total_appointments,
+			icon: <CalendarDays size={22} />,
 		},
 		{
-			title:
-				"Scheduled",
-			value:
-				stats.scheduled_appointments,
-			icon: (
-				<Clock3
-					size={22}
-				/>
-			),
+			title: "Scheduled",
+			value: stats.scheduled_appointments,
+			icon: <Clock3 size={22} />,
 		},
 		{
-			title:
-				"Completed",
-			value:
-				stats.completed_appointments,
-			icon: (
-				<CheckCircle2
-					size={22}
-				/>
-			),
+			title: "Completed",
+			value: stats.completed_appointments,
+			icon: <CheckCircle2 size={22} />,
 		},
 		{
-			title:
-				"Cancelled",
-			value:
-				stats.cancelled_appointments,
-			icon: (
-				<XCircle
-					size={22}
-				/>
-			),
+			title: "Cancelled",
+			value: stats.cancelled_appointments,
+			icon: <XCircle size={22} />,
 		},
 		{
-			title:
-				"Revenue",
-			value: `₹${Number(
-				stats.total_revenue
-			).toLocaleString()}`,
-			icon: (
-				<IndianRupee
-					size={22}
-				/>
-			),
+			title: "Revenue",
+			value: `₹${Number(stats.total_revenue).toLocaleString()}`,
+			icon: <IndianRupee size={22} />,
 		},
 	];
 
 	return (
 		<div
 			style={{
-				display:
-					"flex",
-				flexDirection:
-					"column",
+				display: "flex",
+				flexDirection: "column",
 				gap: "14px",
 			}}
 		>
 			<div>
 				<h2
 					style={{
-						color:
-							"#f0f6ff",
-						fontSize:
-							"16px",
-						fontWeight:
-							600,
+						color: "#f0f6ff",
+						fontSize: "16px",
+						fontWeight: 600,
 						margin: 0,
 					}}
 				>
@@ -299,47 +193,33 @@ export default function AppointmentStats({
 
 				<p
 					style={{
-						color:
-							"#7a9ab8",
-						fontSize:
-							"12px",
-						marginTop:
-							"4px",
+						color: "#7a9ab8",
+						fontSize: "12px",
+						marginTop: "4px",
+						marginBottom: "10px",
 					}}
 				>
-					Monitor appointment activity,
-					completion status,
-					and clinic scheduling.
+					Monitor appointment activity, completion status, and clinic scheduling.
 				</p>
 			</div>
 
 			<div
 				style={{
-					display:
-						"grid",
-					gridTemplateColumns:
-						"repeat(5, minmax(160px, 1fr))",
+					display: "grid",
+					gridTemplateColumns: isMobile
+						? "repeat(2, 1fr)"
+						: "repeat(5, minmax(160px, 1fr))",
 					gap: "14px",
 				}}
 			>
-				{cards.map(
-					(card) => (
-						<StatCard
-							key={
-								card.title
-							}
-							title={
-								card.title
-							}
-							value={
-								card.value
-							}
-							icon={
-								card.icon
-							}
-						/>
-					)
-				)}
+				{cards.map((card) => (
+					<StatCard
+						key={card.title}
+						title={card.title}
+						value={card.value}
+						icon={card.icon}
+					/>
+				))}
 			</div>
 		</div>
 	);
