@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, status, Request, Response, HTTPException
 
 from backend.schemas.auth_schema import (
-    RegisterClinic, 
-    RegisterClinicResponse, 
-    LoginClinic, 
+    RegisterClinic,
+    RegisterClinicResponse,
+    LoginClinic,
     LoginClinicResponse,
     LogoutResponse,
     ForgotPassword,
@@ -13,8 +13,9 @@ from backend.schemas.auth_schema import (
     ClinicDetailResponse,
     ClinicUpdate
 )
+
 from backend.services.auth_service import (
-    create_clinic_service, 
+    create_clinic_service,
     login_clinic_service,
     logout_clinic_service,
     create_new_access_token_service,
@@ -26,16 +27,21 @@ from backend.services.auth_service import (
 
 from backend.database.db import get_db
 from backend.core.security import get_current_clinic
+from backend.core.rate_limiter import limiter
+
 
 router = APIRouter()
 
+
 @router.post("/register", response_model=RegisterClinicResponse, status_code=status.HTTP_201_CREATED)
-def clinic_register(data: RegisterClinic, db=Depends(get_db)):
+@limiter.limit("3/minute")
+def clinic_register(request: Request, data: RegisterClinic, db=Depends(get_db)):
     return create_clinic_service(db, data)
 
 
 @router.post("/login", response_model=LoginClinicResponse, status_code=status.HTTP_200_OK)
-def clinic_login(response: Response, data: LoginClinic, db=Depends(get_db)):
+@limiter.limit("3/minute")
+def clinic_login(request: Request, response: Response, data: LoginClinic, db=Depends(get_db)):
     token_data = login_clinic_service(db, data)
 
     response.set_cookie(
@@ -61,7 +67,7 @@ def clinic_logout(request: Request, response: Response, db=Depends(get_db)):
             status_code=401,
             detail="Refresh Token Missing"
         )
-    
+
     logout_clinic_service(db, refresh_token)
 
     response.delete_cookie(
@@ -77,6 +83,7 @@ def clinic_logout(request: Request, response: Response, db=Depends(get_db)):
 
 
 @router.post("/refresh", response_model=LoginClinicResponse, status_code=status.HTTP_200_OK)
+@limiter.limit("30/minute")
 def create_new_access_token(request: Request, db=Depends(get_db)):
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
@@ -84,17 +91,19 @@ def create_new_access_token(request: Request, db=Depends(get_db)):
             status_code=401,
             detail="Refresh Token Missing"
         )
-    
+
     return create_new_access_token_service(db, refresh_token)
 
 
 @router.post("/forgot-password", response_model=ForgotPasswordResponse, status_code=status.HTTP_200_OK)
-def forgot_password(data: ForgotPassword, db=Depends(get_db)):
+@limiter.limit("3/minute")
+def forgot_password(request: Request, data: ForgotPassword, db=Depends(get_db)):
     return forgot_password_service(db, data)
 
 
 @router.post("/reset-password", response_model=ResetPasswordResponse, status_code=status.HTTP_200_OK)
-def reset_password(data: ResetPassword, db=Depends(get_db)):
+@limiter.limit("3/minute")
+def reset_password(request: Request, data: ResetPassword, db=Depends(get_db)):
     return reset_password_service(db, data)
 
 
