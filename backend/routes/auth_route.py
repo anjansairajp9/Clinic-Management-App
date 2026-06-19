@@ -40,7 +40,7 @@ def clinic_register(request: Request, data: RegisterClinic, db=Depends(get_db)):
 
 
 @router.post("/login", response_model=LoginClinicResponse, status_code=status.HTTP_200_OK)
-@limiter.limit("3/minute")
+@limiter.limit("10/minute")
 def clinic_login(request: Request, response: Response, data: LoginClinic, db=Depends(get_db)):
     token_data = login_clinic_service(db, data)
 
