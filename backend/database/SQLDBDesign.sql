@@ -177,6 +177,11 @@ CREATE TABLE payments (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
+	CONSTRAINT fk_payments_clinic
+		FOREIGN KEY (clinic_id)
+		REFERENCES clinics(id)
+		ON DELETE CASCADE,
+
     CONSTRAINT fk_payments_appointment
         FOREIGN KEY (appointment_id)
         REFERENCES appointments(id)
