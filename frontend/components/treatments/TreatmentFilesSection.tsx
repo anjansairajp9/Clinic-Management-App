@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ImageIcon, FileText, File, Trash2, Upload, ExternalLink } from "lucide-react";
 import { getTreatmentFiles, uploadTreatmentFiles, deleteTreatmentFile } from "@/services/treatment.service";
 import type { TreatmentFile } from "@/types/treatment";
+import { API_BASE_URL } from "@/constants/api";
 import { useMobile } from "@/hooks/useMobile";
 
 type Props = {
@@ -369,7 +370,7 @@ export default function TreatmentFilesSection({ treatmentId }: Props) {
 							</div>
 
 							<a
-								href={`${process.env.NEXT_PUBLIC_API_URL}${file.file_url}`}
+								href={`${API_BASE_URL}${file.file_url}`}
 								target="_blank"
 								rel="noreferrer"
 							>
