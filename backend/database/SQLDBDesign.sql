@@ -288,24 +288,3 @@ ON refresh_tokens(clinic_id);
 
 CREATE INDEX idx_password_reset_clinic_id
 ON password_reset_tokens(clinic_id);
-
-
-SELECT * FROM clinics;
-
-SELECT * FROM patients;
-
-SELECT * FROM patient_medical_history;
-
-SELECT * FROM doctors;
-
-SELECT * FROM appointments;
-
-SELECT * FROM treatments;
-
-SELECT * FROM treatment_files;
-
-SELECT * FROM payments;
-
-SELECT * FROM refresh_tokens;
-
-SELECT * FROM password_reset_tokens;
