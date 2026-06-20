@@ -48,7 +48,7 @@ def clinic_login(request: Request, response: Response, data: LoginClinic, db=Dep
         key="refresh_token",
         value=token_data["refresh_token"],
         httponly=True,
-        secure=False,
+        secure=True,
         samesite="lax",
         max_age=10*24*60*60
     )
@@ -73,7 +73,7 @@ def clinic_logout(request: Request, response: Response, db=Depends(get_db)):
     response.delete_cookie(
         key="refresh_token",
         httponly=True,
-        secure=False,
+        secure=True,
         samesite="lax"
     )
 
