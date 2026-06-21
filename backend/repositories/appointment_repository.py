@@ -766,8 +766,12 @@ def get_appointments_for_reminder(db):
                 AND
                     NOW() + INTERVAL '4 hours 15 minutes'
             """)
-        
-        return cursor.fetchall()
+    
+        appointments = cursor.fetchall()
+
+        print("REMINDER QUERY RESULTS:", appointments)
+
+        return appointments
 
 
 # UPDATE REMINDER SENT TO TRUE, APPOINTMENT REMINDER
