@@ -90,17 +90,17 @@ export default function AuthLayout({
 							boxShadow: "0 0 24px rgba(56,189,248,0.22)",
 						}}
 					>
-						CM
+						CS
 					</div>
 
 					<h2
 						style={{
-							fontSize: isMobile ? "20px" : "26px", // Smaller logo text
+							fontSize: isMobile ? "20px" : "28px", // Smaller logo text
 							fontWeight: 700,
 							color: "#f0f6ff",
 						}}
 					>
-						Clinic Management
+						ClinSyst
 					</h2>
 				</div>
 

@@ -67,7 +67,7 @@ export default function Navbar() {
                 transition: "transform 0.2s ease",
               }}
             >
-              CM
+              CS
             </div>
 
             {/* Brand - Hidden on mobile */}
@@ -75,14 +75,14 @@ export default function Navbar() {
               <div>
                 <h1
                   style={{
-                    fontSize: "17px",
+                    fontSize: "24px",
                     fontWeight: 700,
                     color: "#f0f6ff",
                     marginBottom: "2px",
                     whiteSpace: "nowrap", // Ensure title doesn't break
                   }}
                 >
-                  Clinic Management
+                  ClinSyst
                 </h1>
               </div>
             )}

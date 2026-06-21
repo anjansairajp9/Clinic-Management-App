@@ -95,11 +95,11 @@ export default function Sidebar({
               flexShrink: 0,
             }}
           >
-            CM
+            CS
           </div>
 
-          <h2 style={{ color: "#f0f6ff", fontSize: "18px", fontWeight: 700, margin: 0 }}>
-            Clinic Management
+          <h2 style={{ color: "#f0f6ff", fontSize: "28px", fontWeight: 700, margin: 0 }}>
+            ClinSyst
           </h2>
         </Link>
       )}

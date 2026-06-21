@@ -104,7 +104,7 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
             boxShadow: "0 0 22px rgba(56,189,248,0.18)",
           }}
         >
-          CM
+          CS
         </div>
       </div>
     </header>

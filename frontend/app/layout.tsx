@@ -39,7 +39,7 @@ const dmSerif =
 export const metadata: Metadata =
 {
 	title:
-		"Clinic Management App",
+		"ClinSyst",
 	description:
 		"Modern Clinic Management System",
 };
