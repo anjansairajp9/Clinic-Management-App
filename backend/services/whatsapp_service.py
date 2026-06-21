@@ -1,6 +1,10 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from backend.integrations.gupshup_client import send_message
+
+
+IST = ZoneInfo("Asia/Kolkata")
 
 
 async def send_appointment_confirmation_message(
@@ -13,8 +17,7 @@ async def send_appointment_confirmation_message(
     if isinstance(appointment_time, str):
         appointment_time = datetime.fromisoformat(appointment_time)
 
-    print("WHATSAPP APPOINTMENT TIME:", appointment_time)
-    print("WHATSAPP TZINFO:", appointment_time.tzinfo)
+    appointment_time = appointment_time.astimezone(IST)
 
     appointment_date = appointment_time.strftime("%d-%m-%Y")
 
@@ -43,6 +46,8 @@ async def send_appointment_reminder_message(
     if isinstance(appointment_time, str):
         appointment_time = datetime.fromisoformat(appointment_time)
 
+    appointment_time = appointment_time.astimezone(IST)
+
     appointment_date = appointment_time.strftime("%d-%m-%Y")
 
     appointment_clock_time = appointment_time.strftime("%I:%M %p")
@@ -69,6 +74,8 @@ async def send_appointment_cancelled_message(
 ):
     if isinstance(appointment_time, str):
         appointment_time = datetime.fromisoformat(appointment_time)
+
+    appointment_time = appointment_time.astimezone(IST)
 
     appointment_date = appointment_time.strftime("%d-%m-%Y")
 
