@@ -2,6 +2,7 @@ from datetime import datetime
 
 from backend.integrations.gupshup_client import send_message
 
+
 async def send_appointment_confirmation_message(
     phone: str,
     clinic_name: str,
@@ -11,6 +12,9 @@ async def send_appointment_confirmation_message(
 ):
     if isinstance(appointment_time, str):
         appointment_time = datetime.fromisoformat(appointment_time)
+
+    print("WHATSAPP APPOINTMENT TIME:", appointment_time)
+    print("WHATSAPP TZINFO:", appointment_time.tzinfo)
 
     appointment_date = appointment_time.strftime("%d-%m-%Y")
 
@@ -26,7 +30,7 @@ async def send_appointment_confirmation_message(
             appointment_clock_time,
             clinic_phone
         ]
-    )
+)
 
 
 async def send_appointment_reminder_message(
