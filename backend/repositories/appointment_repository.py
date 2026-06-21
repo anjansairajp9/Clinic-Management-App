@@ -738,16 +738,6 @@ def get_appointment_whatsapp_details(db, clinic_id: int, appointment_id: int):
 # APPOINTMENT REMINDER
 def get_appointments_for_reminder(db):
     with db.cursor() as cursor:
-        cursor.execute("""
-            SELECT
-            NOW() AS current_time,
-            NOW() + INTERVAL '4 hours' AS window_start,
-            NOW() + INTERVAL '4 hours 15 minutes' AS window_end
-        """)
-
-
-        print("REMINDER WINDOW:", cursor.fetchone())
-
         cursor.execute(
                 """SELECT
                     appointments.id AS id,
@@ -775,17 +765,13 @@ def get_appointments_for_reminder(db):
                 WHERE appointments.is_active = TRUE
                 AND appointments.status = 'scheduled'
                 AND appointments.reminder_sent = FALSE
-                AND appointments.appointment_time BETWEEN
+                AND appointments.appointment_time <=
                     NOW() + INTERVAL '4 hours'
-                AND
-                    NOW() + INTERVAL '4 hours 15 minutes'
+                 AND appointments.appointment_time >
+                    NOW() + INTERVAL '3 hours 45 minutes'
             """)
 
-        appointments = cursor.fetchall()
-
-        print("REMINDER QUERY RESULTS:", appointments)
-
-        return appointments
+        return cursor.fetchall()
 
 
 # UPDATE REMINDER SENT TO TRUE, APPOINTMENT REMINDER
