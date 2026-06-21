@@ -43,7 +43,7 @@ celery.conf.update(
                 "process_appointment_reminders_task"
             ),
 
-            "schedule": crontab(minute="*/15")
+            "schedule": crontab(minute="*/1")
         }
     }
 )

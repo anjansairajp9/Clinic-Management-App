@@ -1,17 +1,19 @@
 from datetime import datetime, date
 
 # CREATE APPOINTMENT
+
+
 def create_appointment(
-        db, 
-        clinic_id: int, 
-        patient_id: int, 
-        doctor_id: int, 
+        db,
+        clinic_id: int,
+        patient_id: int,
+        doctor_id: int,
         appointment_type: str,
         appointment_time: datetime,
         complaint: str | None,
         notes: str | None,
         total_amount
-        ):
+):
     with db.cursor() as cursor:
         cursor.execute("""INSERT INTO 
                             appointments (
@@ -20,10 +22,11 @@ def create_appointment(
                             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                        RETURNING 
                             id, patient_id, doctor_id, appointment_type, appointment_time, status, complaint, notes, total_amount, created_at
-                    """, 
-                    (clinic_id, patient_id, doctor_id, appointment_type, appointment_time, "scheduled", complaint, notes, total_amount)
-                    )
-        
+                    """,
+                       (clinic_id, patient_id, doctor_id, appointment_type,
+                        appointment_time, "scheduled", complaint, notes, total_amount)
+                       )
+
         return cursor.fetchone()
 
 
@@ -38,10 +41,12 @@ def get_existing_appointment(db, clinic_id: int, doctor_id: int, appointment_tim
                           AND status = 'scheduled'
                           AND is_active = TRUE
                     """, (clinic_id, doctor_id, appointment_time))
-        
+
         return cursor.fetchone()
-    
+
 # CREATE APPOINTMENT, UPDATE APPOINTMENT DETAILS
+
+
 def get_patient_existing_appointment(db, clinic_id: int, patient_id: int, appointment_time: datetime):
     with db.cursor() as cursor:
         cursor.execute("""SELECT id
@@ -51,7 +56,7 @@ def get_patient_existing_appointment(db, clinic_id: int, patient_id: int, appoin
                           AND appointment_time = %s
                           AND status = 'scheduled'
                           AND is_active = TRUE
-                        """,(clinic_id, patient_id, appointment_time))
+                        """, (clinic_id, patient_id, appointment_time))
 
         return cursor.fetchone()
 
@@ -60,7 +65,7 @@ def get_patient_existing_appointment(db, clinic_id: int, patient_id: int, appoin
 def get_appointment_by_id(db, clinic_id: int, appointment_id: int):
     with db.cursor() as cursor:
         cursor.execute(
-             """SELECT
+            """SELECT
 
                     appointments.id AS id,
 
@@ -100,7 +105,7 @@ def get_appointment_by_id(db, clinic_id: int, appointment_id: int):
                 AND appointments.id = %s
                 AND appointments.is_active = TRUE
             """, (clinic_id, appointment_id))
-        
+
         return cursor.fetchone()
 
 
@@ -191,7 +196,7 @@ def search_appointments(
     with db.cursor() as cursor:
         cursor.execute(query_sql, tuple(values))
 
-        return cursor.fetchall()    
+        return cursor.fetchall()
 
 
 # UPDATE APPOINTMENT DETAILS
@@ -202,7 +207,7 @@ def update_appointment_details(db, clinic_id: int, appointment_id: int, update_d
     for key, value in update_data.items():
         fields.append(f"{key} = %s")
         values.append(value)
-    
+
     fields.append("updated_at = NOW()")
 
     values.extend([clinic_id, appointment_id])
@@ -237,7 +242,7 @@ def soft_delete_appointment(db, clinic_id: int, appointment_id: int):
                           AND is_active = TRUE
                           RETURNING id
                     """, (clinic_id, appointment_id))
-        
+
         return cursor.fetchone()
 
 
@@ -370,10 +375,10 @@ def get_doctor_appointments(
 
 # APPOINTMENT SCHEDULE DASHBOARD
 def get_appointment_schedule(
-    db, 
-    clinic_id: int, 
-    appointment_date: date, 
-    doctor_id: int | None, 
+    db,
+    clinic_id: int,
+    appointment_date: date,
+    doctor_id: int | None,
     status: str | None,
     limit: int,
     offset: int
@@ -455,8 +460,8 @@ def update_appointment_status(db, clinic_id: int, appointment_id: int, status: s
                           AND id = %s
                           AND is_active = TRUE
                           RETURNING id
-                    """,(status, clinic_id, appointment_id))
-        
+                    """, (status, clinic_id, appointment_id))
+
         return cursor.fetchone()
 
 
@@ -464,7 +469,7 @@ def update_appointment_status(db, clinic_id: int, appointment_id: int, status: s
 def get_appointment_analytics(db, clinic_id: int, appointment_date: date):
     with db.cursor() as cursor:
         cursor.execute(
-             """SELECT
+            """SELECT
                     COUNT(*) AS total_appointments,
 
                     COUNT(*) FILTER (
@@ -507,8 +512,8 @@ def get_appointment_analytics(db, clinic_id: int, appointment_date: date):
                 WHERE appointments.clinic_id = %s
                 AND appointments.is_active = TRUE
                 AND DATE(appointments.appointment_time) = %s
-            """,(clinic_id, appointment_date))
-        
+            """, (clinic_id, appointment_date))
+
         return cursor.fetchone()
 
 
@@ -542,7 +547,7 @@ def get_appointment_summary_stats(db, clinic_id: int, appointment_date: date):
 def get_next_appointment(db, clinic_id: int, current_time: datetime):
     with db.cursor() as cursor:
         cursor.execute(
-             """SELECT
+            """SELECT
                     appointments.id AS id,
 
                     patients.name AS patient_name,
@@ -579,7 +584,7 @@ def get_next_appointment(db, clinic_id: int, current_time: datetime):
 def get_upcoming_appointments(db, clinic_id: int, current_time: datetime):
     with db.cursor() as cursor:
         cursor.execute(
-             """SELECT
+            """SELECT
                     appointments.id AS id,
 
                     patients.name AS patient_name,
@@ -683,14 +688,13 @@ def get_all_doctors_booked_appointments(
 def get_all_active_doctors(db, clinic_id: int):
     with db.cursor() as cursor:
         cursor.execute(
-             """SELECT id
+            """SELECT id
                 FROM doctors
                 WHERE clinic_id = %s
                 AND is_active = TRUE
             """, (clinic_id,))
-        
-        return cursor.fetchall()
 
+        return cursor.fetchall()
 
 
 # --- WHATSAPP DATA QUERIES --- #
@@ -699,7 +703,7 @@ def get_all_active_doctors(db, clinic_id: int):
 def get_appointment_whatsapp_details(db, clinic_id: int, appointment_id: int):
     with db.cursor() as cursor:
         cursor.execute(
-             """SELECT
+            """SELECT
                     appointments.id AS id,
                     appointments.appointment_time AS appointment_time,
 
@@ -725,17 +729,27 @@ def get_appointment_whatsapp_details(db, clinic_id: int, appointment_id: int):
                 WHERE appointments.clinic_id = %s
                 AND appointments.id = %s
                 AND appointments.is_active = TRUE
-            """,(clinic_id, appointment_id)
+            """, (clinic_id, appointment_id)
         )
 
         return cursor.fetchone()
 
 
-# APPOINTMENT REMINDER 
+# APPOINTMENT REMINDER
 def get_appointments_for_reminder(db):
     with db.cursor() as cursor:
+        cursor.execute("""
+            SELECT
+            NOW() AS current_time,
+            NOW() + INTERVAL '4 hours' AS window_start,
+            NOW() + INTERVAL '4 hours 15 minutes' AS window_end
+        """)
+
+
+        print("REMINDER WINDOW:", cursor.fetchone())
+
         cursor.execute(
-             """SELECT
+                """SELECT
                     appointments.id AS id,
                     appointments.appointment_time AS appointment_time,
 
@@ -766,12 +780,12 @@ def get_appointments_for_reminder(db):
                 AND
                     NOW() + INTERVAL '4 hours 15 minutes'
             """)
-    
-        appointments = cursor.fetchall()
 
-        print("REMINDER QUERY RESULTS:", appointments)
+    appointments = cursor.fetchall()
 
-        return appointments
+    print("REMINDER QUERY RESULTS:", appointments)
+
+    return appointments
 
 
 # UPDATE REMINDER SENT TO TRUE, APPOINTMENT REMINDER
